@@ -65,7 +65,8 @@ int main(void) {
     // *(volatile uint16_t*) 0x2008 = baz;
 
 
-    uint32_t baz = mulAsm16((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
+    // uint32_t baz = mulAsm16((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
+    uint32_t baz = mulAsm16(0x1234, 0x5678);
     *(volatile uint16_t*) 0x2008 = baz & 0xffff;
     *(volatile uint16_t*) 0x2008 = (baz >> 16) & 0xffff;
 

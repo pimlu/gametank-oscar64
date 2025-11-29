@@ -78,15 +78,14 @@ uint16_t mulAsm(uint8_t a, uint8_t b) {
 
 // based off https://github.com/TobyLobster/multiply_test/blob/main/tests/mult86.a
 // 16 bit x 16 bit unsigned multiply, 32 bit result
-uint32_t mulAsm16(uint16_t x, uint16_t y) {
-    uint8_t x0 = (uint8_t)x;
-    uint8_t x1 = (uint8_t)(x >> 8);
-    uint8_t y0 = (uint8_t)y;
-    uint8_t y1 = (uint8_t)(y >> 8);
+uint32_t mulAsm16(uint16_t in_x, uint16_t in_y) {
+    // Access in_x and in_y directly as bytes (little-endian):
+    // in_x = low byte (x0), in_x+1 = high byte (x1)
+    // in_y = low byte (y0), in_y+1 = high byte (y1)
 
     return __asm {
         // set multiplier as x1
-        lda x1
+        lda in_x+1
         sta p_sqr_lo2
         sta p_sqr_hi1
         eor #$ff
@@ -94,7 +93,7 @@ uint32_t mulAsm16(uint16_t x, uint16_t y) {
         sta p_neg_sqr_hi
 
         // set multiplicand as y0
-        ldy y0
+        ldy in_y
 
         // x1y0l = low(x1*y0)
         // x1y0h = high(x1*y0)
@@ -107,7 +106,7 @@ uint32_t mulAsm16(uint16_t x, uint16_t y) {
         sta sm_x1y0h
 
         // set multiplicand as y1
-        ldy y1
+        ldy in_y+1
 
         // x1y1l = low(x1*y1)
         // z3 = high(x1*y1)
@@ -119,7 +118,7 @@ uint32_t mulAsm16(uint16_t x, uint16_t y) {
         sta accu+3
 
         // set multiplier as x0
-        lda x0
+        lda in_x
         sta p_sqr_lo1
         sta p_sqr_hi2
         eor #$ff
@@ -136,7 +135,7 @@ uint32_t mulAsm16(uint16_t x, uint16_t y) {
         tax
 
         // set multiplicand as y0
-        ldy y0
+        ldy in_y
 
         // z0 = low(x0*y0)
         // A = high(x0*y0)
