@@ -4,7 +4,9 @@
 #pragma section( boot, 0 )
 #pragma section( random, 0 )
 
-#pragma region( zeropage, 0x010, 0x0100, , , { zeropage } )
+// Note: Zero page 0x00-0x2f is reserved by oscar64 for internal registers
+// (IP, ACCU, SP, FP, tmp, etc). User zeropage starts at 0x30+.
+#pragma region( zeropage, 0x030, 0x0100, , , { zeropage } )
 #pragma region( main, 0x0100, 0x2000, , , { bss, random, heap, stack } )
 #pragma stacksize(512)
 #pragma heapsize(0)
@@ -29,8 +31,8 @@
 
 // add a dummy value to data62 so that oscar64 generates something
 #pragma data(data62)
-__export uint8_t foo = 1;
-__export uint8_t bar = 1;
+__export uint8_t foo = 2;
+__export uint8_t bar = 2;
 
 
 // put vector table functions on fixed bank since the banked memory is not configured yet
@@ -54,14 +56,18 @@ int main(void) {
     // why 254? apparently 255 (which is the same as 127, but they recommend setting the MSB)
     // is always in the fixed section, and this is the bank immediately preceding.
     via.changeRomBank(254);
-    imulInit();
+    mulInit();
 
     *(volatile uint8_t*) 0x2008 = 0xaa;
 
 
-    int16_t baz = mulAsm((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
-    *(volatile uint16_t*) 0x2008 = baz;
+    // int16_t baz = mulAsm((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
+    // *(volatile uint16_t*) 0x2008 = baz;
 
+
+    uint32_t baz = mulAsm16((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
+    *(volatile uint16_t*) 0x2008 = baz & 0xffff;
+    *(volatile uint16_t*) 0x2008 = (baz >> 16) & 0xffff;
 
     // for (int i = 0; i < 256; i++) {
     //     for (int j = 0; j < 256; j++) {
