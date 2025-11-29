@@ -1,38 +1,11 @@
+#include "boot.h"
+
 #include <stdint.h>
 
-#pragma section( startup, 0 )
-#pragma section( boot, 0 )
-#pragma section( random, 0 )
-
-// Note: Zero page 0x00-0x2f is reserved by oscar64 for internal registers
-// (IP, ACCU, SP, FP, tmp, etc). User zeropage starts at 0x30+.
-#pragma region( zeropage, 0x030, 0x0100, , , { zeropage } )
-#pragma region( main, 0x0100, 0x2000, , , { bss, random, heap, stack } )
-#pragma stacksize(512)
-#pragma heapsize(0)
-
-
-// banked ROM (GameTank 126) - appears at $8000-$BFFF when bank 126 is selected
-#pragma section( code62, 0 )
-#pragma section( data62, 0 )
-#pragma region( rom62, 0x8000, 0xC000, , 62, { code62, data62 } )
-
-// fixed ROM (GameTank 127) - always visible at $C000-$FFFF
-#pragma section( code63, 0 )
-#pragma section( data63, 0 )
-// startup code at the START of fixed bank (known address 0xC000)
-// NOTE: region must be named exactly "startup" for oscar64 to use it
-#pragma region( startup, 0xC000, 0xC100, , 63, { startup } )
-// fixed code/data area after startup
-#pragma region( rom63, 0xC100, 0xFFFA, , 63, { code, data, code63, data63 } )
-// 6-byte vector table at the very top ($FFFA-$FFFF)
-#pragma region( boot, 0xFFFA, 0x10000, , 63, { boot } )
-
-
-// add a dummy value to data62 so that oscar64 generates something
-#pragma data(data62)
-__export uint8_t foo = 2;
-__export uint8_t bar = 2;
+// // add a dummy value to data62 so that oscar64 generates something
+// #pragma data(data62)
+// __export uint8_t foo = 2;
+// __export uint8_t bar = 2;
 
 
 // put vector table functions on fixed bank since the banked memory is not configured yet
@@ -40,18 +13,23 @@ __export uint8_t bar = 2;
 #pragma data(data63)
 
 
+// NMI is triggered by GameTank vblank
 __asm nmi_handler {
     rti
 }
 
+// IRQ is triggered when blits finish
 __asm irq_handler {
+    byt 0x9c, 0x06, 0x40 // stz 0x4006 (DMA_Start)
     rti
 }
 
-
-#include "via.h"
+#include "bcr.h"
 #include "scr.h"
+#include "via.h"
 #include "imul.h"
+
+#include "graphics/screen.h"
 
 int main(void) {
     // set the banking register first since the "mirror" registers
@@ -69,31 +47,20 @@ int main(void) {
     scr.audioCfg.write(0);
     scr.videoCfg.write(0);
 
-    *(volatile uint8_t*) 0x2008 = 0xaa;
+
+    bcr.resetIrq();
+
+    scr.setDefaultVideoFlags();
+    
+    scr.flipFramebuffer();
 
 
-    // int16_t baz = mulAsm((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
-    // *(volatile uint16_t*) 0x2008 = baz;
+    uint8_t black = (uint8_t) ~0b00100000;
+    graphics::clearBorder(black);
+    scr.flipFramebuffer();
+    graphics::clearBorder(black);
 
-
-    // uint32_t baz = mulAsm16((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
-    uint32_t baz = mulAsm16(0x1234, 0x5678);
-    *(volatile uint16_t*) 0x2008 = baz & 0xffff;
-    *(volatile uint16_t*) 0x2008 = (baz >> 16) & 0xffff;
-
-    // for (int i = 0; i < 256; i++) {
-    //     for (int j = 0; j < 256; j++) {
-    //         int16_t baz = mulAsm(i, j);
-    //         if (baz != ((uint16_t)i * (uint16_t)j)) {
-    //             *(volatile int16_t*) 0x2008 = 0xdead;
-    //             *(volatile int8_t*) 0x2008 = i;
-    //             *(volatile int8_t*) 0x2008 = j;
-    //             *(volatile int16_t*) 0x2008 = baz;
-    //         }
-    //     }
-    // }
-
-    *(volatile uint8_t*) 0x2008 = 0xbb;
+    gameStart();
 
     // write to a debug address to log in the emulator
     for(;;) {

@@ -10,7 +10,9 @@
 Bcr bcr;
 
 void Bcr::drawBox(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c) {
-    asm("sei");
+    __asm {
+        sei
+    };
 
     scr.setColorfillMode(true);
 
@@ -21,7 +23,9 @@ void Bcr::drawBox(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c) {
     color.write(c);
     
     start.write(1);
-    asm("cli");
+    __asm {
+        cli
+    };
 }
 void Bcr::resetIrq() {
     start.write(0);
@@ -32,7 +36,9 @@ void Bcr::setupRowFill(uint8_t c) {
     color.write(c);
 }
 void Bcr::triggerRowFill(uint8_t x, uint8_t y, uint8_t w) {
-    asm("sei");
+    __asm {
+        sei
+    };
     vx.write(x);
     vy.write(y);
     width.write(w);
@@ -41,8 +47,8 @@ void Bcr::triggerRowFill(uint8_t x, uint8_t y, uint8_t w) {
 }
 
 void Bcr::rowFillWait() {
-    asm(
-        "cli;"
-        "wai;"
-        );
+    __asm volatile {
+        cli
+        byt 0xcb // wai
+    };
 }

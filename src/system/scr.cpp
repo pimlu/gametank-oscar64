@@ -19,7 +19,7 @@ void Scr::flipFramebuffer() {
 void Scr::setDefaultVideoFlags() {
     // DMA_PAGE_OUT (framebuffer) should be opposite the blitter target in order
     // to prevent screen tearing
-    videoCfg.write(0b01101111);
+    videoCfg.write(0b01101011);
 }
 void Scr::setEnableVblankNmi(bool enabled) {
     videoCfg.setBit(2, enabled);
