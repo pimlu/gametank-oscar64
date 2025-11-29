@@ -38,7 +38,6 @@ int main(void) {
     // why 254? apparently 255 (which is the same as 127, but they recommend setting the MSB)
     // is always in the fixed section, and this is the bank immediately preceding.
     via.changeRomBank(254);
-    mulInit();
 
 
     scr.audioRst.write(0);
