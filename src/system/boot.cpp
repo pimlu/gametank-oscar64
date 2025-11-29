@@ -30,7 +30,7 @@
 // add a dummy value to data62 so that oscar64 generates something
 #pragma data(data62)
 __export uint8_t foo = 1;
-__export uint8_t bar = 0;
+__export uint8_t bar = 1;
 
 
 // put vector table functions on fixed bank since the banked memory is not configured yet
@@ -59,12 +59,13 @@ int main(void) {
     *(volatile uint8_t*) 0x2008 = 0xaa;
 
 
-    int16_t baz = imulAsm((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
+    int16_t baz = mulAsm((*(volatile uint8_t*) &foo), (*(volatile uint8_t*) &bar));
+    *(volatile uint16_t*) 0x2008 = baz;
 
 
     // for (int i = 0; i < 256; i++) {
     //     for (int j = 0; j < 256; j++) {
-    //         int16_t baz = imulAsm(i, j);
+    //         int16_t baz = mulAsm(i, j);
     //         if (baz != ((uint16_t)i * (uint16_t)j)) {
     //             *(volatile int16_t*) 0x2008 = 0xdead;
     //             *(volatile int8_t*) 0x2008 = i;
@@ -74,7 +75,6 @@ int main(void) {
     //     }
     // }
 
-    *(volatile uint16_t*) 0x2008 = baz;
     *(volatile uint8_t*) 0x2008 = 0xbb;
 
     // write to a debug address to log in the emulator
