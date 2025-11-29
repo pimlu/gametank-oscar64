@@ -4,6 +4,11 @@
 
 #include "types.h"
 
+#pragma code(code63)
+#pragma data(data63)
+#pragma bss(bss)
+
+
 struct Via {
     memreg<0x2800> iorb; // output register b
     memreg<0x2801> iora; // output register a

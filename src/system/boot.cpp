@@ -50,13 +50,24 @@ __asm irq_handler {
 
 
 #include "via.h"
+#include "scr.h"
 #include "imul.h"
 
 int main(void) {
+    // set the banking register first since the "mirror" registers
+    // are affected by the memory bank
+    scr.bankingReg.write(0);
+
     // why 254? apparently 255 (which is the same as 127, but they recommend setting the MSB)
     // is always in the fixed section, and this is the bank immediately preceding.
     via.changeRomBank(254);
     mulInit();
+
+
+    scr.audioRst.write(0);
+    scr.audioNmi.write(0);
+    scr.audioCfg.write(0);
+    scr.videoCfg.write(0);
 
     *(volatile uint8_t*) 0x2008 = 0xaa;
 

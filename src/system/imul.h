@@ -2,6 +2,11 @@
 
 #include <stdint.h>
 
+#pragma code(code63)
+#pragma data(data63)
+#pragma bss(bss)
+
+
 uint16_t mul(uint8_t a, uint8_t b);
 void mulInit();
 uint16_t mulAsm(uint8_t a, uint8_t b);

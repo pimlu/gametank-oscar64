@@ -28,6 +28,7 @@ function table(name, len, fn) {
 
 #pragma code(code63)
 #pragma data(data63)
+#pragma bss(bss)
 
 ${table('sqrlo', 512, i => lo(quarter(i**2)))}
 ${table('sqrhi', 512, i => hi(quarter(i**2)))}

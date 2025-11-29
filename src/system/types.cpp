@@ -2,6 +2,7 @@
 
 #pragma code(code63)
 #pragma data(data63)
+#pragma bss(bss)
 
 uint8_t bits::updateBit(uint8_t reg, uint8_t bit, bool val) {
     if (val) {
