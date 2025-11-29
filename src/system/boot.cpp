@@ -27,7 +27,6 @@ __asm irq_handler {
 #include "bcr.h"
 #include "scr.h"
 #include "via.h"
-#include "imul.h"
 
 #include "graphics/screen.h"
 
