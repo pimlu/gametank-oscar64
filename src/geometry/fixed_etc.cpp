@@ -4,7 +4,10 @@
 
 #include <limits>
 
-// #include <iostream>
+#pragma code(code63)
+#pragma data(data63)
+#pragma bss(bss)
+
 
 // stuff that uses fixed integer sizes and doesn't go in the template
 

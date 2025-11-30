@@ -8,6 +8,8 @@
 
 #include "geometry/types.h"
 
+#include "geometry/sin_lut.h"
+
 
 #pragma code(code63)
 #pragma data(data63)
@@ -22,7 +24,7 @@ void gameStart() {
 
     init();
     
-    geometry::GeoF foo = geometry::GeoF::fromRaw(123);
+    geometry::GeoF foo(1.2);
 
     *(volatile int16_t*) 0x2008 = foo.data;
 

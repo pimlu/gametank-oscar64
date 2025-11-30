@@ -1,5 +1,8 @@
 #include <stdint.h>
 
+#include "double.h"
+#include "util.h"
+
 #include "system/imul.h"
 
 #pragma code(code63)
@@ -10,12 +13,14 @@ namespace geometry {
 
 class UnitF {
 public:
+    typedef uint16_t Data;
     uint16_t data;
 private:
     constexpr UnitF(uint16_t data) : data(data) {}
 public:
     constexpr UnitF() : data(0) {}
     constexpr UnitF(const UnitF& o) : data(o.data) {}
+    constexpr UnitF(double value) : data(round<uint16_t>(value * (((uint32_t)1) << 16))) {}
     constexpr static UnitF fromRaw(uint16_t data) {
         return UnitF(data);
     }
