@@ -51,7 +51,7 @@ void mulInit() {
 
 
 // based off https://github.com/TobyLobster/multiply_test/blob/main/tests/mult65.a
-uint16_t mulAsm(uint8_t a, uint8_t b) {
+uint16_t mul8To16(uint8_t a, uint8_t b) {
     return __asm {
         ldx a
         ldy b
@@ -79,7 +79,7 @@ uint16_t mulAsm(uint8_t a, uint8_t b) {
 
 // based off https://github.com/TobyLobster/multiply_test/blob/main/tests/mult86.a
 // 16 bit x 16 bit unsigned multiply, 32 bit result
-uint32_t mulAsm16(uint16_t in_x, uint16_t in_y) {
+uint32_t mul16To32(uint16_t in_x, uint16_t in_y) {
     // Access in_x and in_y directly as bytes (little-endian):
     // in_x = low byte (x0), in_x+1 = high byte (x1)
     // in_y = low byte (y0), in_y+1 = high byte (y1)
@@ -174,4 +174,46 @@ uint32_t mulAsm16(uint16_t in_x, uint16_t in_y) {
         inc accu+3      // column 3
     fin:
     };
+}
+
+
+
+// TODO overflow probably handled wrong
+
+int16_t imul8To16(int8_t x, int8_t y) {
+    bool neg = false;
+    uint8_t ux, uy;
+    if (x < 0) {
+        neg ^= true;
+        ux = -(uint8_t)x;
+    } else {
+        ux = x;
+    }
+    if (y < 0) {
+        neg ^= true;
+        uy = -(uint8_t)y;
+    } else {
+        uy = y;
+    }
+    int16_t res = (int16_t) mul8To16(ux, uy);
+    return neg ? -res : res;
+}
+
+int32_t imul16To32(int16_t x, int16_t y) {
+    bool neg = false;
+    uint16_t ux, uy;
+    if (x < 0) {
+        neg ^= true;
+        ux = -(uint16_t)x;
+    } else {
+        ux = x;
+    }
+    if (y < 0) {
+        neg ^= true;
+        uy = -(uint16_t)y;
+    } else {
+        uy = y;
+    }
+    int32_t res = (int32_t) mul16To32(ux, uy);
+    return neg ? -res : res;
 }

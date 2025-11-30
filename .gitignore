@@ -1,3 +1,4 @@
 /gametank.*
 /output.*
 /screenshot.bmp
+__pycache__/
