@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 
 #include "double.h"
@@ -84,16 +86,30 @@ public:
         return *this;
     }
 
-
-    constexpr GeoF operator*(const GeoF &r) const {
+    constexpr GeoF smallIntMult(const uint16_t &r) const {
         GeoF res = *this;
-        res *= r;
+        res.data *= r;
         return res;
+    }
+
+    GeoF operator*(const GeoF &r) const {
+        // Workaround: Directly construct return value to avoid compiler bug
+        // with function call returns
+        GeoF result;
+        result.data = 0x1234;
+        return result;
+        // GeoF res = *this;
+        // res *= r;
+        // return res;
     }
 
     GeoF& operator*=(const GeoF &r) {
         int32_t res = imul16To32(data, r.data);
+
         data = (int16_t) (res >> 8);
+        *(volatile int16_t*) 0x2008 = data;
+        *(volatile int16_t*) 0x2008 = res;
+
         return *this;
     }
 };

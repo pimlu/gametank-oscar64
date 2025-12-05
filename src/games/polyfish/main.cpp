@@ -2,6 +2,7 @@
 
 
 #include "system/bcr.h"
+#include "system/imul.h"
 #include "system/interrupts.h"
 #include "system/scr.h"
 #include "graphics/screen.h"
@@ -15,18 +16,34 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-
+using namespace geometry;
 
 void init();
 void tick();
 
 void gameStart() {
+    mulInit();
 
     init();
     
-    geometry::GeoF foo(1.2);
+    GeoF foo(1.2);
 
-    *(volatile int16_t*) 0x2008 = foo.data;
+    GeoF baz(2.5);
+
+    GeoF quz = foo * baz;
+    *(volatile int16_t*) 0x2008 = quz.data;
+
+
+    // uint32_t val = mul16To32(20, 30);
+    // *(volatile uint16_t*) 0x2008 = val;
+
+
+
+
+    // iUnitF bar = sin(GeoF(32.0/3.0));
+    
+
+    // *(volatile int16_t*) 0x2008 = bar.val.data;
 
     for (;;) {
         scr.setEnableVblankNmi(false);

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "sin_lut_data.h"
 #include "lut.h"
+#include "types.h"
 
+#include <stdint.h>
 
 #pragma code(code63)
 #pragma data(data63)
@@ -10,19 +11,11 @@
 
 namespace geometry {
 
-
-
-
-constexpr double SIN_START = 0.0;
-constexpr double SIN_STEP = 32.0 / 256;
-
-constexpr uint16_t SIN_START_RAW = GeoF(SIN_START).getRaw();
-constexpr uint16_t SIN_STEP_RAW = GeoF(SIN_STEP).getRaw();
-
-
-// 1 is slightly outside the range lol
-constexpr UnitF almostOne = UnitF::fromRaw(0xffff);
-
-constexpr Lut<GeoF, UnitF> lut(sinLutData);
+// calculates sin(x/32 * Math.PI/2)
+// a half range AKA [-64,64) of GeoF becomes one sin loop
+iUnitF sin(GeoF x);
+iUnitF cos(GeoF x);
 
 }
+
+#pragma compile("sin_lut.cpp")

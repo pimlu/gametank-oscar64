@@ -24,6 +24,15 @@ __asm irq_handler {
     rti
 }
 
+__asm reset_handler {
+    // we need to reset the banking register before oscar64 does anything.
+    // this is because it is read only and if we ever hope to modify it, it needs to be in a known state.
+    // changing the RAM bank later is risky because oscar64 sets up important state during the boot process
+    byt 0x9c, 0x05, 0x20 // stz 0x2005 (banking register)
+    jmp 0xc000 // oscar64 puts the boot logic here
+}
+
+
 #include "bcr.h"
 #include "scr.h"
 #include "via.h"
@@ -71,6 +80,6 @@ int main(void) {
 #pragma data(boot)
 __export struct Boot {
     void *nmi, *reset, *irq;
-} boot = { nmi_handler, (void *)0xC000, irq_handler };
+} boot = { nmi_handler, reset_handler, irq_handler };
 
 #pragma data(data63)

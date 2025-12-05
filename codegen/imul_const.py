@@ -1,7 +1,4 @@
-
-lo = lambda x: x & 0xff
-hi = lambda x: (x & 0xffff) >> 8
-
+from .util import lsb, msb
 
 
 def table(name, length, fn):
@@ -29,10 +26,10 @@ def gen_imul_const():
 #pragma data(data63)
 #pragma bss(bss)
 
-{table('sqrlo', 512, lambda i: lo(i**2 // 4))}
-{table('sqrhi', 512, lambda i: hi(i**2 // 4))}
+{table('sqrlo', 512, lambda i: lsb(i**2 // 4))}
+{table('sqrhi', 512, lambda i: msb(i**2 // 4))}
 
 
-{table('negsqrlo', 512, lambda i: lo((255-i)**2 // 4))}
-{table('negsqrhi', 512, lambda i: hi((255-i)**2 // 4))}
+{table('negsqrlo', 512, lambda i: lsb((255-i)**2 // 4))}
+{table('negsqrhi', 512, lambda i: msb((255-i)**2 // 4))}
 """

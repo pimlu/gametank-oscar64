@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 import os
-import codegen.imul_const as imul_const
-import codegen.fixed as fixed
+import codegen
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(script_dir, 'src')
-imul_const_file = os.path.join(src_dir, 'system', 'imul_const.cpp')
 
 
 
 
 def main():
+    imul_const_file = os.path.join(src_dir, 'system', 'imul_const.cpp')
     with open(imul_const_file, 'w') as f:
-        f.write(imul_const.gen_imul_const())
+        f.write(codegen.gen_imul_const())
+
+    
+    sin_lut_data_file = os.path.join(src_dir, 'geometry', 'sin_lut_data.cpp')
+    with open(sin_lut_data_file, 'w') as f:
+        f.write(codegen.gen_sin_lut_data())
     
 
 if __name__ == '__main__':

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 
 #include "double.h"
@@ -83,6 +85,11 @@ public:
         return *this;
     }
 
+    constexpr UnitF smallIntMult(const uint16_t &r) const {
+        UnitF res = *this;
+        res.data *= r;
+        return res;
+    }
 
     constexpr UnitF operator*(const UnitF &r) const {
         UnitF res = *this;
