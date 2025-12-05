@@ -4,7 +4,7 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-uint8_t bits::updateBit(uint8_t reg, uint8_t bit, bool val) {
+uint8_t bits_update(uint8_t reg, uint8_t bit, bool val) {
     if (val) {
         return reg | (1 << bit);
     } else {
@@ -12,10 +12,10 @@ uint8_t bits::updateBit(uint8_t reg, uint8_t bit, bool val) {
     }
 }
 
-uint8_t bits::toggleBit(uint8_t reg, uint8_t bit) {
+uint8_t bits_toggle(uint8_t reg, uint8_t bit) {
     return reg ^ (1 << bit);
 }
 
-bool bits::getBit(uint8_t reg, uint8_t bit) {
+bool bits_get(uint8_t reg, uint8_t bit) {
     return reg & (1 << bit);
 }

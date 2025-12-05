@@ -3,33 +3,29 @@
 #include <stdint.h>
 
 #include "types.h"
+#include "reg_macros.h"
 
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
+DECLARE_MEMREG(via_reg_iorb); // output register b
+DECLARE_MEMREG(via_reg_iora); // output register a
+DECLARE_MEMREG(via_reg_ddrb);
+DECLARE_MEMREG(via_reg_ddra);
+DECLARE_MEMREG(via_reg_t1cl);
+DECLARE_MEMREG(via_reg_t1ch);
+DECLARE_MEMREG(via_reg_t2cl);
+DECLARE_MEMREG(via_reg_t2ch);
+DECLARE_MEMREG(via_reg_sr);
+DECLARE_MEMREG(via_reg_acr);
+DECLARE_MEMREG(via_reg_pcr);
+DECLARE_MEMREG(via_reg_ifr);
+DECLARE_MEMREG(via_reg_era);
+DECLARE_MEMREG(via_reg_iora_nh);
 
-struct Via {
-    memreg<0x2800> iorb; // output register b
-    memreg<0x2801> iora; // output register a
-    memreg<0x2802> ddrb;
-    memreg<0x2803> ddra;
-    memreg<0x2804> t1cl;
-    memreg<0x2805> t1ch;
-    memreg<0x2806> t2cl;
-    memreg<0x2807> t2ch;
-    memreg<0x2808> sr;
-    memreg<0x2809> acr;
-    memreg<0x280a> pcr;
-    memreg<0x280b> ifr;
-    memreg<0x280c> era;
-    memreg<0x280d> iora_nh;
+void via_change_rom_bank(uint8_t bank_num);
+void via_profiler_start(uint8_t id);
+void via_profiler_end(uint8_t id);
 
-    void changeRomBank(uint8_t bankNum);
-    void profilerStart(uint8_t id);
-    void profilerEnd(uint8_t id);
-};
-
-extern Via via;
-
-#pragma compile("via.cpp")
+#pragma compile("via.c")

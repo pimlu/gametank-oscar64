@@ -34,6 +34,6 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-void gameStart();
+void game_start();
 
-#pragma compile("boot.cpp")
+#pragma compile("boot.c")

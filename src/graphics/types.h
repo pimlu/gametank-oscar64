@@ -6,21 +6,12 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-namespace graphics {
-
-struct ScreenPos {
+struct graphics_screen_pos {
     int8_t x, y;
-    inline ScreenPos transpose() {
-        return {y, x};
-    }
-
-    inline ScreenPos flip() {
-        return {(int8_t)-y, x};
-    }
-    inline ScreenPos unflip() {
-        return {y, (int8_t)-x};
-    }
 };
 
+struct graphics_screen_pos graphics_screen_pos_transpose(struct graphics_screen_pos pos);
+struct graphics_screen_pos graphics_screen_pos_flip(struct graphics_screen_pos pos);
+struct graphics_screen_pos graphics_screen_pos_unflip(struct graphics_screen_pos pos);
 
-}
+#pragma compile("types.c")

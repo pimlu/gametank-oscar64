@@ -1,33 +1,25 @@
 #pragma once
 #include "types.h"
+#include "reg_macros.h"
 
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
-
 // https://wiki.gametank.zone/doku.php?id=hardware:blitter#blitter_registers
-struct Bcr {
-    memreg<0x4000> vx;
-    memreg<0x4001> vy;
-    memreg<0x4002> gx;
-    memreg<0x4003> gy;
-    memreg<0x4004> width;
-    memreg<0x4005> height;
-    memreg<0x4006> start;
-    memreg<0x4007> color;
+DECLARE_MEMREG(bcr_reg_vx);
+DECLARE_MEMREG(bcr_reg_vy);
+DECLARE_MEMREG(bcr_reg_gx);
+DECLARE_MEMREG(bcr_reg_gy);
+DECLARE_MEMREG(bcr_reg_width);
+DECLARE_MEMREG(bcr_reg_height);
+DECLARE_MEMREG(bcr_reg_start);
+DECLARE_MEMREG(bcr_reg_color);
 
+void bcr_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c);
+void bcr_reset_irq(void);
+void bcr_setup_row_fill(uint8_t c);
+void bcr_trigger_row_fill(uint8_t x, uint8_t y, uint8_t w);
+void bcr_row_fill_wait(void);
 
-    void drawBox(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c);
-    void resetIrq();
-
-    void setupRowFill(uint8_t c);
-    void triggerRowFill(uint8_t x, uint8_t y, uint8_t w);
-    void rowFillWait();
-
-};
-
-extern Bcr bcr;
-
-
-#pragma compile("bcr.cpp")
+#pragma compile("bcr.c")

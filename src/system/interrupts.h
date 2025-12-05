@@ -1,12 +1,9 @@
 #pragma once
 
-
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
+void wait_for_interrupt(void);
 
-inline void waitForInterrupt();
-
-
-#pragma compile("interrupts.cpp")
+#pragma compile("interrupts.c")

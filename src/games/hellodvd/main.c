@@ -1,32 +1,30 @@
 #include "system/boot.h"
 
+#include <stdint.h>
 
 #include "system/bcr.h"
 #include "system/interrupts.h"
 #include "system/scr.h"
 #include "graphics/screen.h"
 
-
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
+void init(void);
+void tick(void);
 
-void init();
-void tick();
-
-void gameStart() {
-
+void game_start(void) {
     init();
 
     for (;;) {
-        scr.setEnableVblankNmi(false);
+        scr_set_enable_vblank_nmi(false);
 
         tick();
-        scr.flipFramebuffer();
+        scr_flip_framebuffer();
         
-        scr.setEnableVblankNmi(true);
-        waitForInterrupt();
+        scr_set_enable_vblank_nmi(true);
+        wait_for_interrupt();
     }
 }
 
@@ -39,7 +37,7 @@ uint8_t size = 10;
 uint8_t x, y;
 int8_t dx, dy;
 
-void init() {
+void init(void) {
     x = 20;
     y = 70;
 
@@ -47,19 +45,18 @@ void init() {
     dy = 1;
 }
 
-
 // draw a bouncing box on the screen
-void tick() {
-    graphics::clearScreen(blue);
+void tick(void) {
+    graphics_clear_screen(blue);
 
-    bcr.drawBox(x, y, size, size, red);
-    waitForInterrupt();
+    bcr_draw_box(x, y, size, size, red);
+    wait_for_interrupt();
 
-    if (x + dx < graphics::FRAME_X_LO || x + size + dx >= graphics::FRAME_X_HI) {
+    if (x + dx < GRAPHICS_FRAME_X_LO || x + size + dx >= GRAPHICS_FRAME_X_HI) {
         dx = -dx;
     }
 
-    if (y + dy < graphics::FRAME_Y_LO || y + size + dy >= graphics::FRAME_Y_HI) {
+    if (y + dy < GRAPHICS_FRAME_Y_LO || y + size + dy >= GRAPHICS_FRAME_Y_HI) {
         dy = -dy;
     }
 

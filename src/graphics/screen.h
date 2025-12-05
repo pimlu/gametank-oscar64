@@ -2,41 +2,36 @@
 
 #include <stdint.h>
 
-
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
+#define GRAPHICS_SCREEN_WIDTH 128
+#define GRAPHICS_SCREEN_HEIGHT 128
 
-namespace graphics {
+#define GRAPHICS_PADDING_TOP 7
+#define GRAPHICS_PADDING_BOT 8
+#define GRAPHICS_PADDING_LEFT 1
+#define GRAPHICS_PADDING_RIGHT 1
 
-extern constexpr uint8_t SCREEN_WIDTH;
-extern constexpr uint8_t SCREEN_HEIGHT;
+#define GRAPHICS_FRAME_X_LO GRAPHICS_PADDING_LEFT
+#define GRAPHICS_FRAME_X_HI (GRAPHICS_SCREEN_WIDTH - GRAPHICS_PADDING_RIGHT)
+#define GRAPHICS_FRAME_W (GRAPHICS_FRAME_X_HI - GRAPHICS_FRAME_X_LO)
 
-extern constexpr uint8_t PADDING_TOP;
-extern constexpr uint8_t PADDING_BOT;
-extern constexpr uint8_t PADDING_LEFT;
-extern constexpr uint8_t PADDING_RIGHT;
+#define GRAPHICS_FRAME_Y_LO GRAPHICS_PADDING_TOP
+#define GRAPHICS_FRAME_Y_HI (GRAPHICS_SCREEN_HEIGHT - GRAPHICS_PADDING_BOT)
+#define GRAPHICS_FRAME_H (GRAPHICS_FRAME_Y_HI - GRAPHICS_FRAME_Y_LO)
 
-extern constexpr uint8_t FRAME_X_LO;
-extern constexpr uint8_t FRAME_X_HI;
-extern constexpr uint8_t FRAME_W;
+#define GRAPHICS_SCENE_X_LO (0 - (GRAPHICS_FRAME_W + 1) / 2)
+#define GRAPHICS_SCENE_X_HI (0 + (GRAPHICS_FRAME_W) / 2)
+// Y is inverted so invert the rounding I guess
+#define GRAPHICS_SCENE_Y_LO (0 - (GRAPHICS_FRAME_H) / 2)
+#define GRAPHICS_SCENE_Y_HI (0 + (GRAPHICS_FRAME_H + 1) / 2)
 
-extern constexpr uint8_t FRAME_Y_LO;
-extern constexpr uint8_t FRAME_Y_HI;
-extern constexpr uint8_t FRAME_H;
+#define GRAPHICS_SCENE_X_TO_FRAME (((int8_t)GRAPHICS_FRAME_X_LO) - GRAPHICS_SCENE_X_LO)
+#define GRAPHICS_SCENE_Y_TO_FRAME (((int8_t)GRAPHICS_FRAME_Y_LO) - GRAPHICS_SCENE_Y_LO)
 
-extern constexpr int8_t SCENE_X_LO;
-extern constexpr int8_t SCENE_X_HI;
-extern constexpr int8_t SCENE_Y_LO;
-extern constexpr int8_t SCENE_Y_HI;
+void graphics_clear_border(uint8_t c);
+void graphics_clear_screen(uint8_t c);
 
-extern constexpr int8_t SCENE_X_TO_FRAME;
-extern constexpr int8_t SCENE_Y_TO_FRAME;
-
-void clearBorder(uint8_t c);
-void clearScreen(uint8_t c);
-
-}
-
-#pragma compile("screen.cpp")
+#pragma compile("screen.c")

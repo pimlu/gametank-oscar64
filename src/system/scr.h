@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include "reg_macros.h"
 
 #define INPUT_MASK_UP		2056
 #define INPUT_MASK_DOWN		1028
@@ -15,25 +16,19 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-
 // https://wiki.gametank.zone/doku.php?id=hardware:memorymap#system_control_registers
-struct Scr {
-    memreg<0x2000> audioRst;
-    memreg<0x2001> audioNmi;
-    memreg<0x2005> bankingReg;
-    memreg<0x2006> audioCfg;
-    memreg<0x2007> videoCfg;
-    readreg<0x2008> gamepad1;
-    readreg<0x2009> gamepad2;
+DECLARE_MEMREG(scr_reg_audio_rst);
+DECLARE_MEMREG(scr_reg_audio_nmi);
+DECLARE_MEMREG(scr_reg_banking);
+DECLARE_MEMREG(scr_reg_audio_cfg);
+DECLARE_MEMREG(scr_reg_video_cfg);
+DECLARE_READREG(scr_reg_gamepad1);
+DECLARE_READREG(scr_reg_gamepad2);
 
-    void setColorfillMode(bool enabled);
-    void flipFramebuffer();
-    void setDefaultVideoFlags();
-    void setEnableVblankNmi(bool enabled);
+void scr_set_colorfill_mode(bool enabled);
+void scr_flip_framebuffer(void);
+void scr_set_default_video_flags(void);
+void scr_set_enable_vblank_nmi(bool enabled);
+uint16_t scr_read_gamepad1(void);
 
-    uint16_t readGamepad1();
-};
-
-extern Scr scr;
-
-#pragma compile("scr.cpp")
+#pragma compile("scr.c")

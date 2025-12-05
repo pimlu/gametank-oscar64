@@ -42,32 +42,32 @@ __asm reset_handler {
 int main(void) {
     // set the banking register first since the "mirror" registers
     // are affected by the memory bank
-    scr.bankingReg.write(0);
+    scr_reg_banking_write(0);
 
     // why 254? apparently 255 (which is the same as 127, but they recommend setting the MSB)
     // is always in the fixed section, and this is the bank immediately preceding.
-    via.changeRomBank(254);
+    via_change_rom_bank(254);
 
 
-    scr.audioRst.write(0);
-    scr.audioNmi.write(0);
-    scr.audioCfg.write(0);
-    scr.videoCfg.write(0);
+    scr_reg_audio_rst_write(0);
+    scr_reg_audio_nmi_write(0);
+    scr_reg_audio_cfg_write(0);
+    scr_reg_video_cfg_write(0);
 
 
-    bcr.resetIrq();
+    bcr_reset_irq();
 
-    scr.setDefaultVideoFlags();
+    scr_set_default_video_flags();
     
-    scr.flipFramebuffer();
+    scr_flip_framebuffer();
 
 
     uint8_t black = (uint8_t) ~0b00100000;
-    graphics::clearBorder(black);
-    scr.flipFramebuffer();
-    graphics::clearBorder(black);
+    graphics_clear_border(black);
+    scr_flip_framebuffer();
+    graphics_clear_border(black);
 
-    gameStart();
+    game_start();
 
     // write to a debug address to log in the emulator
     for(;;) {
