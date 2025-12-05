@@ -1,117 +1,46 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "double.h"
-#include "util.h"
-
 #include "system/imul.h"
 
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
+// Macro to convert double to geof raw value
+#define GEOF_FROM_DOUBLE(value) ((int16_t)((value) >= 0 ? ((value) * 256.0 + 0.5) : ((value) * 256.0 - 0.5)))
 
-namespace geometry {
-
-class GeoF {
-public:
-    typedef int16_t Data;
+typedef struct {
     int16_t data;
-private:
-    constexpr GeoF(int16_t data) : data(data) {}
-public:
-    constexpr GeoF() : data(0) {}
-    constexpr GeoF(const GeoF& o) : data(o.data) {}
-    constexpr GeoF(double value) : data(round<int16_t>(value * (((uint32_t)1) << 8))) {}
-    constexpr static GeoF fromRaw(int16_t data) {
-        return GeoF(data);
-    }
-    constexpr int16_t getRaw() const {
-        return data;
-    }
+} geof_t;
 
-    constexpr uint8_t lsb() const {
-        return data & 0xff;
-    }
+// Constructors
+geof_t geof_from_raw(int16_t data);
+geof_t geof_from_raw_bytes(uint8_t lsb, uint8_t msb);
+geof_t geof_zero(void);
 
-    constexpr uint8_t msb() const {
-        return (data >> 8) & 0xff;
-    }
-    constexpr static GeoF fromRaw(uint8_t lsb, uint8_t msb) {
-        int16_t data = (msb << 8) | lsb;
-        return GeoF(data);
-    }
-    
-    constexpr bool operator==(const GeoF& rhs) const {
-        return data == rhs.data;
-    }
-    constexpr bool operator<(const GeoF& rhs) const {
-        return data < rhs.data;
-    }
-    constexpr bool operator>(const GeoF& rhs) const {
-        return data > rhs.data;
-    }
-    constexpr bool operator<=(const GeoF& rhs) const { return !(*this > rhs); }
-    constexpr bool operator>=(const GeoF& rhs) const { return !(*this < rhs); }
-    constexpr bool operator!=(const GeoF& rhs) const { return !(*this == rhs); }
+// Accessors
+int16_t geof_get_raw(geof_t val);
+uint8_t geof_lsb(geof_t val);
+uint8_t geof_msb(geof_t val);
 
-    constexpr GeoF operator+(const GeoF &r) const {
-        GeoF res = *this;
-        res += r;
-        return res;
-    }
+// Comparison operators
+bool geof_eq(geof_t a, geof_t b);
+bool geof_lt(geof_t a, geof_t b);
+bool geof_gt(geof_t a, geof_t b);
+bool geof_le(geof_t a, geof_t b);
+bool geof_ge(geof_t a, geof_t b);
+bool geof_ne(geof_t a, geof_t b);
 
-    constexpr GeoF& operator+=(const GeoF &r) {
-        data += r.data;
-        return *this;
-    }
+// Arithmetic operations
+geof_t geof_add(geof_t a, geof_t b);
+geof_t geof_neg(geof_t val);
+void geof_negate(geof_t *val);
+geof_t geof_sub(geof_t a, geof_t b);
+geof_t geof_small_int_mult(geof_t val, uint16_t r);
+geof_t geof_mul(geof_t a, geof_t b);
 
-    
-    constexpr GeoF operator-() const {
-        return fromRaw(-data);
-    }
-    constexpr void negate() {
-        data = -data;
-    }
-
-    constexpr GeoF operator-(const GeoF &r) const {
-        GeoF res = *this;
-        res -= r;
-        return res;
-    }
-
-    constexpr GeoF& operator-=(const GeoF &r) {
-        data -= r.data;
-        return *this;
-    }
-
-    constexpr GeoF smallIntMult(const uint16_t &r) const {
-        GeoF res = *this;
-        res.data *= r;
-        return res;
-    }
-
-    GeoF operator*(const GeoF &r) const {
-        // Workaround: Directly construct return value to avoid compiler bug
-        // with function call returns
-        GeoF result;
-        result.data = 0x1234;
-        return result;
-        // GeoF res = *this;
-        // res *= r;
-        // return res;
-    }
-
-    GeoF& operator*=(const GeoF &r) {
-        int32_t res = imul16To32(data, r.data);
-
-        data = (int16_t) (res >> 8);
-        *(volatile int16_t*) 0x2008 = data;
-        *(volatile int16_t*) 0x2008 = res;
-
-        return *this;
-    }
-};
-
-}
+#pragma compile("geof.c")

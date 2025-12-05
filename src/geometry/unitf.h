@@ -1,107 +1,47 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "double.h"
-#include "util.h"
-
 #include "system/imul.h"
 
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
-namespace geometry {
+// Macro to convert double to unitf raw value
+#define UNITF_FROM_DOUBLE(value) ((uint16_t)((value) * 65536.0 + 0.5))
 
-class UnitF {
-public:
-    typedef uint16_t Data;
+typedef struct {
     uint16_t data;
-private:
-    constexpr UnitF(uint16_t data) : data(data) {}
-public:
-    constexpr UnitF() : data(0) {}
-    constexpr UnitF(const UnitF& o) : data(o.data) {}
-    constexpr UnitF(double value) : data(round<uint16_t>(value * (((uint32_t)1) << 16))) {}
-    constexpr static UnitF fromRaw(uint16_t data) {
-        return UnitF(data);
-    }
-    constexpr uint16_t getRaw() const {
-        return data;
-    }
+} unitf_t;
 
-    constexpr uint8_t lsb() const {
-        return data & 0xff;
-    }
+// Constructors
+unitf_t unitf_from_raw(uint16_t data);
+unitf_t unitf_from_raw_bytes(uint8_t lsb, uint8_t msb);
+unitf_t unitf_zero(void);
 
-    constexpr uint8_t msb() const {
-        return (data >> 8) & 0xff;
-    }
-    constexpr static UnitF fromRaw(uint8_t lsb, uint8_t msb) {
-        uint16_t data = (msb << 8) | lsb;
-        return UnitF(data);
-    }
-    
-    constexpr bool operator==(const UnitF& rhs) const {
-        return data == rhs.data;
-    }
-    constexpr bool operator<(const UnitF& rhs) const {
-        return data < rhs.data;
-    }
-    constexpr bool operator>(const UnitF& rhs) const {
-        return data > rhs.data;
-    }
-    constexpr bool operator<=(const UnitF& rhs) const { return !(*this > rhs); }
-    constexpr bool operator>=(const UnitF& rhs) const { return !(*this < rhs); }
-    constexpr bool operator!=(const UnitF& rhs) const { return !(*this == rhs); }
+// Accessors
+uint16_t unitf_get_raw(unitf_t val);
+uint8_t unitf_lsb(unitf_t val);
+uint8_t unitf_msb(unitf_t val);
 
-    constexpr UnitF operator+(const UnitF &r) const {
-        UnitF res = *this;
-        res += r;
-        return res;
-    }
+// Comparison operators
+bool unitf_eq(unitf_t a, unitf_t b);
+bool unitf_lt(unitf_t a, unitf_t b);
+bool unitf_gt(unitf_t a, unitf_t b);
+bool unitf_le(unitf_t a, unitf_t b);
+bool unitf_ge(unitf_t a, unitf_t b);
+bool unitf_ne(unitf_t a, unitf_t b);
 
-    constexpr UnitF& operator+=(const UnitF &r) {
-        data += r.data;
-        return *this;
-    }
+// Arithmetic operations
+unitf_t unitf_add(unitf_t a, unitf_t b);
+unitf_t unitf_neg(unitf_t val);
+void unitf_negate(unitf_t *val);
+unitf_t unitf_sub(unitf_t a, unitf_t b);
+unitf_t unitf_small_int_mult(unitf_t val, uint16_t r);
+unitf_t unitf_mul(unitf_t a, unitf_t b);
+unitf_t unitf_scale_by_uint8(unitf_t val, uint8_t scale);
 
-    
-    constexpr UnitF operator-() const {
-        return fromRaw(-data);
-    }
-    constexpr void negate() {
-        data = -data;
-    }
-
-    constexpr UnitF operator-(const UnitF &r) const {
-        UnitF res = *this;
-        res -= r;
-        return res;
-    }
-
-    constexpr UnitF& operator-=(const UnitF &r) {
-        data -= r.data;
-        return *this;
-    }
-
-    constexpr UnitF smallIntMult(const uint16_t &r) const {
-        UnitF res = *this;
-        res.data *= r;
-        return res;
-    }
-
-    constexpr UnitF operator*(const UnitF &r) const {
-        UnitF res = *this;
-        res *= r;
-        return res;
-    }
-
-    UnitF& operator*=(const UnitF &r) {
-        uint32_t res = mul16To32(data, r.data);
-        data = (uint16_t) (res >> 16);
-        return *this;
-    }
-};
-
-}
+#pragma compile("unitf.c")

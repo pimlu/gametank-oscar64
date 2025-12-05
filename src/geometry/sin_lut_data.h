@@ -6,6 +6,6 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-extern const geometry::StandardLut sinLut;
+extern const struct lut sin_lut;
 
-#pragma compile("sin_lut_data.cpp")
+#pragma compile("sin_lut_data.c")

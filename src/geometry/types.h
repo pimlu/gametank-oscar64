@@ -3,62 +3,27 @@
 #include "geof.h"
 #include "unitf.h"
 #include "graphics/types.h"
+#include <stdbool.h>
 
 #pragma code(code63)
 #pragma data(data63)
 #pragma bss(bss)
 
-
-namespace geometry {
-
-
-GeoF scaleGeoF(GeoF val, UnitF scale);
+geof_t geometry_scale_geof(geof_t val, unitf_t scale);
 
 // this lame thing is because UnitF is unsigned
-struct iUnitF {
-    UnitF val;
+typedef struct {
+    unitf_t val;
     bool negated;
-    
+} iunitf_t;
 
-    GeoF operator*(const GeoF &r) const {
-        // *(volatile int16_t*) 0x2008 = 0xbeAf;
-        // *(volatile int16_t*) 0x2008 = r.getRaw();
-        // *(volatile uint16_t*) 0x2008 = val.getRaw();
-        // if (r.getRaw()) {
-        //     *(volatile int16_t*) 0x2008 = r.getRaw();
-        // }
-        GeoF res = scaleGeoF(r, val);
-        // *(volatile int16_t*) 0x2008 = res.getRaw();
-        // *(volatile int16_t*) 0x2008 = 0xdead;
-        return negated ? -res : res; 
-    }
-    iUnitF operator-() const {
-        return {val, !negated};
-    }
-};
+typedef struct {
+    geof_t x, y, z;
+} coord_t;
 
-struct Coord {
-    GeoF x, y, z;
+typedef struct {
+    geof_t x, y;
+} coord2d_t;
 
-    constexpr Coord& operator+=(const Coord &r) {
-        x += r.x;
-        y += r.y;
-        z += r.z;
-        return *this;
-    }
-    constexpr Coord operator+(const Coord &r) const {
-        Coord res = *this;
-        res += r;
-        return res;
-    }
-    constexpr Coord operator-(const Coord &r) const {
-        return {x - r.x, y - r.y, z - r.z};
-    }
-};
-
-struct Coord2d {
-    GeoF x, y;
-};
-
-}
+#pragma compile("types.c")
 

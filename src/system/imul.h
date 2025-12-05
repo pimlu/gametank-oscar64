@@ -20,5 +20,5 @@ extern const uint8_t negsqrhi[512];
 
 #pragma compile("imul.c")
 
-#pragma compile("imul_const.cpp")
+#pragma compile("imul_const.c")
 

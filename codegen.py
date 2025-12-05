@@ -19,6 +19,10 @@ def main():
     with open(sin_lut_data_file, 'w') as f:
         f.write(codegen.gen_sin_lut_data())
     
+    geometry_constants_file = os.path.join(src_dir, 'geometry', 'constants.h')
+    with open(geometry_constants_file, 'w') as f:
+        f.write(codegen.gen_fixed_constants())
+    
 
 if __name__ == '__main__':
     main()
