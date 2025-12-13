@@ -1,6 +1,5 @@
 #include "imul.h"
 
-
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -195,58 +194,6 @@ uint32_t mul16_to_32(uint16_t x, uint16_t y) {
 
 #endif
 
-uint64_box mul32_to_64(uint32_t x, uint32_t y) {
-    // Karatsuba algorithm: split 32-bit numbers into 16-bit halves
-    const uint8_t M = 16;
-    const uint32_t MBIT = ((uint32_t)1) << M;
-    const uint32_t MASK = MBIT - 1;
-    
-    uint16_t x0 = x & MASK;
-    uint16_t x1 = x >> M;
-    uint16_t y0 = y & MASK;
-    uint16_t y1 = y >> M;
-    
-    // z0 = x0 * y0 (low 32 bits of result)
-    uint64_box z0 = uint64_box_from_uint32(mul16_to_32(x0, y0));
-    
-    // z2 = x1 * y1 (high 32 bits of result, shifted left by 32)
-    uint64_box z2 = uint64_box_from_uint32(mul16_to_32(x1, y1));
-    
-    // Compute z3 = (x1 + x0) * (y1 + y0)
-    // The tricky part: these sums can overflow 16 bits, so we need to handle carry
-    uint32_t z3l = (uint32_t)x1 + (uint32_t)x0;
-    uint32_t z3r = (uint32_t)y1 + (uint32_t)y0;
-    uint32_t z3lLo = z3l & MASK;
-    uint32_t z3rLo = z3r & MASK;
-    uint64_box z3Base = uint64_box_from_uint32(mul16_to_32((uint16_t)z3lLo, (uint16_t)z3rLo));
-    bool z3lCarry = (z3l >> M) != 0;
-    bool z3rCarry = (z3r >> M) != 0;
-    uint64_box carry = uint64_box_from_uint32(0);
-    if (z3lCarry) {
-        carry = uint64_box_add(carry, uint64_box_from_uint32(z3rLo));
-    }
-    if (z3rCarry) {
-        carry = uint64_box_add(carry, uint64_box_from_uint32(z3lLo));
-    }
-    if (z3lCarry && z3rCarry) {
-        carry = uint64_box_add(carry, uint64_box_from_uint32(MBIT));
-    }
-    
-    uint64_box carry_shifted = uint64_box_shl(carry, M);
-    uint64_box z3 = uint64_box_add(z3Base, carry_shifted);
-    
-    // z1 = z3 - z2 - z0
-    uint64_box z1 = uint64_box_sub(uint64_box_sub(z3, z2), z0);
-    
-    // Combine: result = z0 + (z1 << 16) + (z2 << 32)
-    uint64_box z1_shifted = uint64_box_shl(z1, M);
-    uint64_box z2_shifted = uint64_box_shl(z2, M * 2);
-    
-    return uint64_box_add(uint64_box_add(z0, z1_shifted), z2_shifted);
-}
-
-// TODO overflow probably handled wrong
-
 int16_t imul8_to_16(int8_t x, int8_t y) {
     bool neg = false;
     uint8_t ux, uy;
@@ -283,24 +230,4 @@ int32_t imul16_to_32(int16_t x, int16_t y) {
     }
     int32_t res = (int32_t) mul16_to_32(ux, uy);
     return neg ? -res : res;
-}
-
-int64_box imul32_to_64(int32_t x, int32_t y) {
-    bool neg = false;
-    uint32_t ux, uy;
-    if (x < 0) {
-        neg ^= true;
-        ux = -(uint32_t)x;
-    } else {
-        ux = x;
-    }
-    if (y < 0) {
-        neg ^= true;
-        uy = -(uint32_t)y;
-    } else {
-        uy = y;
-    }
-    uint64_box ures = mul32_to_64(ux, uy);
-    int64_box res = int64_box_from_uint64_box(ures);
-    return neg ? int64_box_neg(res) : res;
 }
