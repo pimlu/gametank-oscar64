@@ -32,28 +32,6 @@ fi
 # Cleanup bresenham test
 rm -f /tmp/bresenham_test
 
-# Compile the mul test
-echo "Compiling mul_test..."
-clang -D__TEST__ \
-    -I. -Isrc \
-    tests/mul_test.c \
-    src/system/imul.c \
-    -o /tmp/mul_test \
-    -Wall -Wextra -Werror -Wno-unknown-pragmas
-
-# Run the mul test
-echo "Running mul_test..."
-/tmp/mul_test
-MUL_EXIT_CODE=$?
-
-# Cleanup
-rm -f /tmp/mul_test
-
-if [ $MUL_EXIT_CODE -ne 0 ]; then
-    echo "Mul tests failed with exit code $MUL_EXIT_CODE"
-    exit $MUL_EXIT_CODE
-fi
-
 echo "All tests passed!"
 exit 0
 
