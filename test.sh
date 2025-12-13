@@ -5,36 +5,17 @@ cd "$(dirname "$0")"
 
 # Compile test with clang
 # We need to include source files and define __TEST__
+# Note: imul.c uses #ifdef __OSCAR64C__ to provide host-compatible implementations
 
-# Create a simple stub for imul functions that doesn't require 6502-specific code
-cat > /tmp/imul_stub.c << 'EOF'
-#include <stdint.h>
-#include <stdbool.h>
-
-// Stub implementations for host testing
-uint16_t mul8_to_16(uint8_t a, uint8_t b) {
-    return (uint16_t)a * (uint16_t)b;
-}
-
-int16_t imul8_to_16(int8_t x, int8_t y) {
-    return (int16_t)x * (int16_t)y;
-}
-
-// Dummy init function (not needed for tests)
-void mul_init(void) {
-}
-EOF
-
-# Compile the test
+# Compile the bresenham test
 # -Wno-unknown-pragmas: ignore oscar64-specific pragmas
-# -Wno-error=unknown-pragmas: don't treat unknown pragmas as errors
 clang -D__TEST__ \
     -I. -Isrc \
     tests/bresenham_test.c \
     src/graphics/bresenham.c \
     src/graphics/types.c \
     src/system/i8helpers.c \
-    /tmp/imul_stub.c \
+    src/system/imul.c \
     -o /tmp/bresenham_test \
     -Wall -Wextra -Werror -Wno-unknown-pragmas
 
@@ -42,13 +23,37 @@ clang -D__TEST__ \
 /tmp/bresenham_test
 EXIT_CODE=$?
 
-# Cleanup
-rm -f /tmp/bresenham_test /tmp/imul_stub.c
-
-if [ $EXIT_CODE -eq 0 ]; then
-    echo "All tests passed!"
-else
-    echo "Tests failed with exit code $EXIT_CODE"
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "Bresenham tests failed with exit code $EXIT_CODE"
+    rm -f /tmp/bresenham_test
     exit $EXIT_CODE
 fi
+
+# Cleanup bresenham test
+rm -f /tmp/bresenham_test
+
+# Compile the mul test
+echo "Compiling mul_test..."
+clang -D__TEST__ \
+    -I. -Isrc \
+    tests/mul_test.c \
+    src/system/imul.c \
+    -o /tmp/mul_test \
+    -Wall -Wextra -Werror -Wno-unknown-pragmas
+
+# Run the mul test
+echo "Running mul_test..."
+/tmp/mul_test
+MUL_EXIT_CODE=$?
+
+# Cleanup
+rm -f /tmp/mul_test
+
+if [ $MUL_EXIT_CODE -ne 0 ]; then
+    echo "Mul tests failed with exit code $MUL_EXIT_CODE"
+    exit $MUL_EXIT_CODE
+fi
+
+echo "All tests passed!"
+exit 0
 

@@ -2,7 +2,10 @@
 
 
 #include <stdint.h>
+#include <stdbool.h>
 
+
+#ifdef __OSCAR64C__
 
 #pragma code(code63)
 #pragma data(data63)
@@ -176,7 +179,70 @@ uint32_t mul16_to_32(uint16_t in_x, uint16_t in_y) {
     };
 }
 
+#else
 
+void mul_init(void) {
+    // no initialization needed
+}
+
+uint16_t mul8_to_16(uint8_t a, uint8_t b) {
+    return (uint16_t)a * (uint16_t)b;
+}
+
+uint32_t mul16_to_32(uint16_t x, uint16_t y) {
+    return (uint32_t)x * (uint32_t)y;
+}
+
+#endif
+
+uint64_t mul32_to_64(uint32_t x, uint32_t y) {
+    // Karatsuba algorithm: split 32-bit numbers into 16-bit halves
+    const uint8_t M = 16;
+    const uint32_t MBIT = ((uint32_t)1) << M;
+    const uint32_t MASK = MBIT - 1;
+    
+    uint16_t x0 = x & MASK;
+    uint16_t x1 = x >> M;
+    uint16_t y0 = y & MASK;
+    uint16_t y1 = y >> M;
+    
+    // z0 = x0 * y0 (low 32 bits of result)
+    uint64_t z0 = mul16_to_32(x0, y0);
+    
+    // z2 = x1 * y1 (high 32 bits of result, shifted left by 32)
+    uint64_t z2 = mul16_to_32(x1, y1);
+    
+    // Compute z3 = (x1 + x0) * (y1 + y0)
+    // The tricky part: these sums can overflow 16 bits, so we need to handle carry
+    uint32_t z3l = (uint32_t)x1 + (uint32_t)x0;
+    uint32_t z3r = (uint32_t)y1 + (uint32_t)y0;
+    uint32_t z3lLo = z3l & MASK;
+    uint32_t z3rLo = z3r & MASK;
+    uint64_t z3Base = mul16_to_32((uint16_t)z3lLo, (uint16_t)z3rLo);
+    bool z3lCarry = (z3l >> M) != 0;
+    bool z3rCarry = (z3r >> M) != 0;
+    uint64_t carry = 0;
+    if (z3lCarry) {
+        carry += z3rLo;
+    }
+    if (z3rCarry) {
+        carry += z3lLo;
+    }
+    if (z3lCarry && z3rCarry) {
+        carry += MBIT;
+    }
+    
+    uint64_t z3 = z3Base + (carry << M);
+    
+    // z1 = z3 - z2 - z0
+    uint64_t z1 = z3 - z2 - z0;
+    
+    // Combine: result = z0 + (z1 << 16) + (z2 << 32)
+    z1 <<= M;
+    z2 <<= (M * 2);
+    
+    return z0 + z1 + z2;
+}
 
 // TODO overflow probably handled wrong
 
@@ -215,5 +281,24 @@ int32_t imul16_to_32(int16_t x, int16_t y) {
         uy = y;
     }
     int32_t res = (int32_t) mul16_to_32(ux, uy);
+    return neg ? -res : res;
+}
+
+int64_t imul32_to_64(int32_t x, int32_t y) {
+    bool neg = false;
+    uint32_t ux, uy;
+    if (x < 0) {
+        neg ^= true;
+        ux = -(uint32_t)x;
+    } else {
+        ux = x;
+    }
+    if (y < 0) {
+        neg ^= true;
+        uy = -(uint32_t)y;
+    } else {
+        uy = y;
+    }
+    int64_t res = (int64_t) mul32_to_64(ux, uy);
     return neg ? -res : res;
 }
