@@ -27,6 +27,11 @@ void game_start(void) {
     mul_init();
 
     init();
+
+
+    for (;;) {}
+
+
     
     // geof_t foo = {GEOF_FROM_DOUBLE(1.2)};
     // geof_t baz = {GEOF_FROM_DOUBLE(2.5)};
