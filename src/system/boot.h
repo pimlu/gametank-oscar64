@@ -5,9 +5,8 @@
 #pragma section( boot, 0 )
 #pragma section( random, 0 )
 
-// Note: Zero page 0x00-0x2f is reserved by oscar64 for internal registers
-// (IP, ACCU, SP, FP, tmp, etc). User zeropage starts at 0x30+.
-#pragma region( zeropage, 0x030, 0x0100, , , { zeropage } )
+// With oscar64's -xz flag, zeropage starts at 0x080.
+#pragma region( zeropage, 0x080, 0x0100, , , { zeropage } )
 #pragma region( main, 0x0100, 0x2000, , , { bss, random, heap, stack } )
 #pragma stacksize(512)
 #pragma heapsize(0)

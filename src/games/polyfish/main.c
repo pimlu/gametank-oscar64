@@ -97,15 +97,6 @@ void tick(void) {
 
     graphics_fill_triangle((struct graphics_screen_pos){-10,-10}, (struct graphics_screen_pos){20,10}, (struct graphics_screen_pos){30, 30}, red);
 
-    *(volatile int8_t*) 0x2008 = 0xa1;
-    *(volatile int8_t*) 0x2008 = 3;
-
-    // __asm volatile {};
-
-    // for (uint8_t i=0; i<128; i++) {
-    //     __asm { nop };
-    // }
-
     if (x + dx < GRAPHICS_FRAME_X_LO || x + size + dx >= GRAPHICS_FRAME_X_HI) {
         dx = -dx;
     }
