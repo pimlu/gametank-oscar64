@@ -37,7 +37,7 @@ void game_start(void) {
     // *(volatile int16_t*) 0x2008 = unitf_get_raw(bar.val);
 
     // iunitf_t bar = geometry_sin((geof_t){GEOF_PI / 6});
-    // *(volatile int16_t*) 0x2008 = unitf_get_raw(b
+    // *(volatile int16_t*) 0x2008 = unitf_get_raw(bar);
     scr_flip_framebuffer();
 
 
@@ -73,27 +73,8 @@ void init(void) {
 void tick(void) {
     *(volatile uint8_t*) 0x2008 = 0xf0;
     graphics_clear_screen(blue);
-    *(volatile int8_t*) 0x2008 = 0xa1;
+    *(volatile uint8_t*) 0x2008 = 0xa1;
     *(volatile int8_t*) 0x2008 = 1;
-
-    // bcr_draw_box(x, y, size, size, red);
-    // *(volatile int8_t*) 0x2008 = 0xa2;
-    
-
-    // bcr_setup_row_fill(red);
-    // for (uint8_t i=0; i<size; i++) {
-    //     bcr_trigger_row_fill(x, y+i, size);
-    //     bcr_row_fill_wait();
-    // }
-
-
-
-    // bcr_setup_row_fill(red);
-
-    // for (uint8_t i=0; i<20; i++) {
-    //     bcr_trigger_row_fill(20, i+10, 1);
-    //     bcr_row_fill_wait();
-    // }
 
     graphics_fill_triangle((struct graphics_screen_pos){-10,-10}, (struct graphics_screen_pos){20,10}, (struct graphics_screen_pos){30, 30}, red);
 

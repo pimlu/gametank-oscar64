@@ -15,5 +15,3 @@
 #define UNITF_ALMOST_ONE 0xffff
 
 
-#define 
-

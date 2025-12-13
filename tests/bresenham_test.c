@@ -1,0 +1,537 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <time.h>
+
+
+// Include headers (pragmas will be ignored by clang)
+#include "graphics/bresenham.h"
+#include "graphics/types.h"
+#include "system/i8helpers.h"
+#include "system/imul.h"
+
+// Reference implementation (from C++ test)
+typedef struct {
+    struct graphics_screen_pos a, b;
+    int E;
+    int X_left;
+} bresenham_reference_pos_t;
+
+typedef struct {
+    struct graphics_screen_pos a, b;
+    int E;
+    int X_left;
+} bresenham_reference_neg_t;
+
+typedef struct {
+    bresenham_reference_pos_t pos;
+    bresenham_reference_neg_t neg;
+    bool is_pos;
+} bresenham_reference_t;
+
+static void bresenham_reference_pos_init(bresenham_reference_pos_t *ref, 
+                                         struct graphics_screen_pos a, 
+                                         struct graphics_screen_pos b) {
+    ref->a = a;
+    ref->b = b;
+    ref->E = (b.y - a.y) - (b.x - a.x);
+    ref->X_left = a.x;
+}
+
+static int8_t bresenham_reference_pos_iter(bresenham_reference_pos_t *ref) {
+    while (ref->E < 0) {
+        ref->X_left++;
+        ref->E += 2 * (ref->b.y - ref->a.y);
+    }
+    ref->E -= 2 * (ref->b.x - ref->a.x);
+    return (int8_t)ref->X_left;
+}
+
+static void bresenham_reference_neg_init(bresenham_reference_neg_t *ref,
+                                          struct graphics_screen_pos a,
+                                          struct graphics_screen_pos b) {
+    ref->a = a;
+    ref->b = b;
+    ref->E = -(b.y - a.y) - (b.x - a.x);
+    ref->X_left = a.x;
+}
+
+static int8_t bresenham_reference_neg_iter(bresenham_reference_neg_t *ref) {
+    while (ref->E >= 0) {
+        ref->X_left--;
+        ref->E -= 2 * (ref->b.y - ref->a.y);
+    }
+    ref->E -= 2 * (ref->b.x - ref->a.x);
+    return (int8_t)ref->X_left;
+}
+
+static void bresenham_reference_init(bresenham_reference_t *ref,
+                                      struct graphics_screen_pos a,
+                                      struct graphics_screen_pos b) {
+    ref->is_pos = b.x >= a.x;
+    if (ref->is_pos) {
+        bresenham_reference_pos_init(&ref->pos, a, b);
+    } else {
+        bresenham_reference_neg_init(&ref->neg, a, b);
+    }
+}
+
+static int8_t bresenham_reference_iter(bresenham_reference_t *ref) {
+    if (ref->is_pos) {
+        return bresenham_reference_pos_iter(&ref->pos);
+    } else {
+        return bresenham_reference_neg_iter(&ref->neg);
+    }
+}
+
+// Bresenham interface using function pointers
+typedef struct {
+    void *state;
+    void (*init)(void *state, struct graphics_screen_pos a, struct graphics_screen_pos b);
+    int8_t (*iter)(void *state);
+} bresenham_interface_t;
+
+// Wrapper for production Bresenham
+typedef struct {
+    struct bresenham bres;
+} bresenham_wrapper_t;
+
+static void bresenham_wrapper_init(void *state, struct graphics_screen_pos a, struct graphics_screen_pos b) {
+    bresenham_wrapper_t *wrapper = (bresenham_wrapper_t *)state;
+    bresenham_init(&wrapper->bres, a, b);
+}
+
+static int8_t bresenham_wrapper_iter(void *state) {
+    bresenham_wrapper_t *wrapper = (bresenham_wrapper_t *)state;
+    return bresenham_iter(&wrapper->bres);
+}
+
+static bresenham_interface_t bresenham_wrapper_interface(bresenham_wrapper_t *wrapper) {
+    bresenham_interface_t iface = {
+        .state = wrapper,
+        .init = bresenham_wrapper_init,
+        .iter = bresenham_wrapper_iter
+    };
+    return iface;
+}
+
+// Wrapper for reference Bresenham
+static void bresenham_reference_wrapper_init(void *state, struct graphics_screen_pos a, struct graphics_screen_pos b) {
+    bresenham_reference_t *ref = (bresenham_reference_t *)state;
+    bresenham_reference_init(ref, a, b);
+}
+
+static int8_t bresenham_reference_wrapper_iter(void *state) {
+    bresenham_reference_t *ref = (bresenham_reference_t *)state;
+    return bresenham_reference_iter(ref);
+}
+
+static bresenham_interface_t bresenham_reference_interface(bresenham_reference_t *ref) {
+    bresenham_interface_t iface = {
+        .state = ref,
+        .init = bresenham_reference_wrapper_init,
+        .iter = bresenham_reference_wrapper_iter
+    };
+    return iface;
+}
+
+// Test fill callback context
+typedef struct {
+    bool **bits;
+    size_t w, h;
+    bool bad_range;
+} test_fill_context_t;
+
+// Test fill callback for reference implementation
+static void test_fill_callback_ref(int8_t y, int8_t x_left, int8_t x_right, test_fill_context_t *ctx) {
+    if (y < 0 || (size_t)y >= ctx->h || x_left < 0 || (size_t)x_right > ctx->w) {
+        if (!ctx->bad_range) {
+            ctx->bad_range = true;
+            printf("OOPS. bad range y=%d xLeft=%d xRight=%d\n", y, x_left, x_right);
+            printf("w=%zu h=%zu\n", ctx->w, ctx->h);
+        }
+        return;
+    }
+    
+    for (int x = x_left; x < x_right; x++) {
+        if (x >= 0 && (size_t)x < ctx->w) {
+            ctx->bits[y][x] = true;
+        }
+    }
+}
+
+// Test fill callback for production implementation
+static void test_fill_callback_impl(int8_t y, int8_t x_left, int8_t x_right, test_fill_context_t *ctx) {
+    // Same implementation
+    test_fill_callback_ref(y, x_left, x_right, ctx);
+}
+
+// Generate reference triangle implementation
+#define TRIANGLE_FUNC_NAME graphics_fill_triangle_ref
+#define TRIANGLE_FILL_CALL test_fill_callback_ref
+#define TRIANGLE_FILL_CTX test_fill_context_t
+#define TRIANGLE_BRES_STRUCT bresenham_reference_t
+#define TRIANGLE_BRES_INIT_CALL bresenham_reference_init
+#define TRIANGLE_BRES_ITER_CALL bresenham_reference_iter
+#include "graphics/triangle_impl.c"
+
+// Test structures
+typedef struct {
+    size_t w, h;
+    const char *answer_str;
+    struct graphics_screen_pos a, b, c;
+} bres_test_t;
+
+// Generate real triangle implementation
+#define TRIANGLE_FUNC_NAME graphics_fill_triangle_impl
+#define TRIANGLE_FILL_CALL test_fill_callback_impl
+#define TRIANGLE_FILL_CTX test_fill_context_t
+#define TRIANGLE_BRES_STRUCT struct bresenham
+#define TRIANGLE_BRES_INIT_CALL bresenham_init
+#define TRIANGLE_BRES_ITER_CALL bresenham_iter
+#include "graphics/triangle_impl.c"
+
+// Forward declarations for generated functions (these will be defined by the includes above)
+// Note: These are generated by the template, so we declare them manually
+extern void graphics_fill_triangle_ref(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, test_fill_context_t *fill_context);
+extern void graphics_fill_triangle_impl(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, test_fill_context_t *fill_context);
+
+static bool test_combo_ref(const bres_test_t *test, 
+                           struct graphics_screen_pos a, 
+                           struct graphics_screen_pos b, 
+                           struct graphics_screen_pos c) {
+    // Allocate bits array
+    bool **bits = malloc(test->h * sizeof(bool *));
+    for (size_t i = 0; i < test->h; i++) {
+        bits[i] = calloc(test->w, sizeof(bool));
+    }
+    
+    test_fill_context_t ctx = {
+        .bits = bits,
+        .w = test->w,
+        .h = test->h,
+        .bad_range = false
+    };
+    
+    graphics_fill_triangle_ref(a, b, c, &ctx);
+    
+    if (ctx.bad_range) {
+        for (size_t i = 0; i < test->h; i++) {
+            free(bits[i]);
+        }
+        free(bits);
+        return false;
+    }
+    
+    // Build result string
+    size_t result_size = test->h * (test->w + 1) + 2;
+    char *result = malloc(result_size * sizeof(char));
+    size_t pos = 0;
+    result[pos++] = '\n';
+    
+    for (size_t y = 0; y < test->h; y++) {
+        for (size_t x = 0; x < test->w; x++) {
+            result[pos++] = bits[y][x] ? '#' : '.';
+        }
+        result[pos++] = '\n';
+    }
+    result[pos] = '\0';
+    
+    bool match = (strcmp(result, test->answer_str) == 0);
+    
+    if (!match) {
+        printf("OOPS. {%d,%d}, {%d,%d}, {%d,%d}\n", a.x, a.y, b.x, b.y, c.x, c.y);
+        printf("expected:%sactual:%s", test->answer_str, result);
+    }
+    
+    free(result);
+    for (size_t i = 0; i < test->h; i++) {
+        free(bits[i]);
+    }
+    free(bits);
+    
+    return match;
+}
+
+static bool test_combo_impl(const bres_test_t *test, 
+                            struct graphics_screen_pos a, 
+                            struct graphics_screen_pos b, 
+                            struct graphics_screen_pos c) {
+    // Allocate bits array
+    bool **bits = malloc(test->h * sizeof(bool *));
+    for (size_t i = 0; i < test->h; i++) {
+        bits[i] = calloc(test->w, sizeof(bool));
+    }
+    
+    test_fill_context_t ctx = {
+        .bits = bits,
+        .w = test->w,
+        .h = test->h,
+        .bad_range = false
+    };
+    
+    graphics_fill_triangle_impl(a, b, c, &ctx);
+    
+    if (ctx.bad_range) {
+        for (size_t i = 0; i < test->h; i++) {
+            free(bits[i]);
+        }
+        free(bits);
+        return false;
+    }
+    
+    // Build result string
+    size_t result_size = test->h * (test->w + 1) + 2;
+    char *result = malloc(result_size * sizeof(char));
+    size_t pos = 0;
+    result[pos++] = '\n';
+    
+    for (size_t y = 0; y < test->h; y++) {
+        for (size_t x = 0; x < test->w; x++) {
+            result[pos++] = bits[y][x] ? '#' : '.';
+        }
+        result[pos++] = '\n';
+    }
+    result[pos] = '\0';
+    
+    // For production, compare against reference output
+    test_fill_context_t ref_ctx = {
+        .bits = malloc(test->h * sizeof(bool *)),
+        .w = test->w,
+        .h = test->h,
+        .bad_range = false
+    };
+    for (size_t i = 0; i < test->h; i++) {
+        ref_ctx.bits[i] = calloc(test->w, sizeof(bool));
+    }
+    
+    graphics_fill_triangle_ref(a, b, c, &ref_ctx);
+    
+    // Build reference result string
+    char *ref_result = malloc(result_size * sizeof(char));
+    pos = 0;
+    ref_result[pos++] = '\n';
+    for (size_t y = 0; y < test->h; y++) {
+        for (size_t x = 0; x < test->w; x++) {
+            ref_result[pos++] = ref_ctx.bits[y][x] ? '#' : '.';
+        }
+        ref_result[pos++] = '\n';
+    }
+    ref_result[pos] = '\0';
+    
+    bool match = (strcmp(result, ref_result) == 0);
+    
+    if (!match) {
+        printf("OOPS. {%d,%d}, {%d,%d}, {%d,%d}\n", a.x, a.y, b.x, b.y, c.x, c.y);
+        printf("reference:%sproduction:%s", ref_result, result);
+    }
+    
+    free(ref_result);
+    for (size_t i = 0; i < test->h; i++) {
+        free(ref_ctx.bits[i]);
+    }
+    free(ref_ctx.bits);
+    
+    free(result);
+    for (size_t i = 0; i < test->h; i++) {
+        free(bits[i]);
+    }
+    free(bits);
+    
+    return match;
+}
+
+static bool test_all_combos_ref(const bres_test_t *test) {
+    struct graphics_screen_pos a = test->a, b = test->b, c = test->c;
+    
+    if (!test_combo_ref(test, a, b, c)) return false;
+    if (!test_combo_ref(test, b, c, a)) return false;
+    if (!test_combo_ref(test, c, a, b)) return false;
+    if (!test_combo_ref(test, c, b, a)) return false;
+    if (!test_combo_ref(test, a, c, b)) return false;
+    return true;
+}
+
+static bool test_all_combos_impl(const bres_test_t *test) {
+    struct graphics_screen_pos a = test->a, b = test->b, c = test->c;
+    
+    if (!test_combo_impl(test, a, b, c)) return false;
+    if (!test_combo_impl(test, b, c, a)) return false;
+    if (!test_combo_impl(test, c, a, b)) return false;
+    if (!test_combo_impl(test, c, b, a)) return false;
+    if (!test_combo_impl(test, a, c, b)) return false;
+    return true;
+}
+
+// Test suite
+static const bres_test_t suite[] = {
+    {
+        6, 4,
+        "\n"
+        "......\n"
+        ".##...\n"
+        ".####.\n"
+        "..#...\n",
+        {1, 1}, {2, 4}, {6, 2}
+    },
+    {
+        4, 4,
+        "\n"
+        "....\n"
+        ".#..\n"
+        "....\n"
+        "....\n",
+        {1, 1}, {1, 3}, {3, 1}
+    },
+    {
+        4, 4,
+        "\n"
+        "....\n"
+        "..#.\n"
+        ".##.\n"
+        "....\n",
+        {3, 1}, {1, 3}, {3, 3}
+    },
+    {
+        7, 3,
+        "\n"
+        "....#..\n"
+        ".###...\n"
+        ".......\n",
+        {0, 2}, {4, 2}, {6, 0}
+    },
+    {
+        7, 3,
+        "\n"
+        ".....#.\n"
+        "....##.\n"
+        ".....##\n",
+        {6, 0}, {4, 2}, {7, 3}
+    },
+    {
+        4, 4,
+        "\n"
+        "....\n"
+        "#...\n"
+        "##..\n"
+        "..#.\n",
+        {0, 1}, {0, 3}, {4, 4}
+    },
+    {
+        6, 3,
+        "\n"
+        ".#####\n"
+        "...###\n"
+        ".....#\n",
+        {0, 0}, {6, 0}, {6, 3}
+    },
+    {
+        6, 3,
+        "\n"
+        "#####.\n"
+        "###...\n"
+        "#.....\n",
+        {0, 0}, {6, 0}, {0, 3}
+    },
+    {
+        6, 3,
+        "\n"
+        ".####.\n"
+        "###...\n"
+        "#.....\n",
+        {1, 0}, {6, 0}, {0, 3}
+    },
+    {
+        7, 3,
+        "\n"
+        ".#####.\n"
+        "...###.\n"
+        "......#\n",
+        {0, 0}, {6, 0}, {7, 3}
+    },
+};
+
+// Comparison test
+static bool test_same_algo(struct graphics_screen_pos a, 
+                           struct graphics_screen_pos b,
+                           bresenham_interface_t *iface1,
+                           bresenham_interface_t *iface2) {
+    if (a.y > b.y) {
+        struct graphics_screen_pos tmp = a;
+        a = b;
+        b = tmp;
+    }
+    
+    iface1->init(iface1->state, a, b);
+    iface2->init(iface2->state, a, b);
+    
+    bool good = true;
+    for (int8_t y = a.y; y < b.y; y++) {
+        int8_t res1 = iface1->iter(iface1->state);
+        int8_t res2 = iface2->iter(iface2->state);
+        if (res1 != res2) {
+            printf("{%d,%d},{%d,%d} differing at y=%d: %d vs %d\n", 
+                   a.x, a.y, b.x, b.y, y, res1, res2);
+            good = false;
+        }
+    }
+    return good;
+}
+
+// Simple RNG for fuzzing
+static int8_t rng_int8(int8_t min, int8_t max) {
+    int range = max - min + 1;
+    return (int8_t)(min + (rand() % range));
+}
+
+int main(void) {
+    printf("running fixed test suite\n");
+    
+    // Test reference implementation against the suite (to verify reference is correct)
+    for (size_t i = 0; i < sizeof(suite) / sizeof(suite[0]); i++) {
+        if (!test_all_combos_ref(&suite[i])) {
+            return 1;
+        }
+    }
+    
+    // Test against reference implementation
+    printf("testing bresenham against reference...\n");
+    for (size_t i = 0; i < sizeof(suite) / sizeof(suite[0]); i++) {
+        if (!test_all_combos_impl(&suite[i])) {
+            return 1;
+        }
+    }
+    
+    // Fuzz test comparing both implementations (line algorithm only)
+    const size_t ITERS = 1000000;
+    printf("fuzzing line algorithm against reference... (%zu iters)\n", ITERS);
+    
+    // Allocate state for line algorithm comparison
+    bresenham_wrapper_t prod_left;
+    bresenham_reference_t ref_left;
+    
+    bresenham_interface_t prod_left_iface = bresenham_wrapper_interface(&prod_left);
+    bresenham_interface_t ref_left_iface = bresenham_reference_interface(&ref_left);
+    
+    srand(time(NULL));
+    for (size_t i = 0; i < ITERS; i++) {
+        struct graphics_screen_pos a = {rng_int8(0, 3), rng_int8(0, 3)};
+        struct graphics_screen_pos b = {rng_int8(0, 3), rng_int8(0, 3)};
+        
+        if (a.y > b.y) {
+            struct graphics_screen_pos tmp = a;
+            a = b;
+            b = tmp;
+        }
+        
+        if (!test_same_algo(a, b, &prod_left_iface, &ref_left_iface)) {
+            return 1;
+        }
+    }
+    
+    printf("passed all tests\n");
+    return 0;
+}

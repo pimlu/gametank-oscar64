@@ -40,9 +40,6 @@ bool bresenham_check_swapped(struct graphics_screen_pos a, struct graphics_scree
 void bresenham_init(struct bresenham *bres, struct graphics_screen_pos a, struct graphics_screen_pos b);
 int8_t bresenham_iter(struct bresenham *bres);
 
-// Fill callback type: void fill(int8_t y, int8_t xLeft, int8_t xRight, void *context)
-typedef void (*fill_callback_t)(int8_t y, int8_t x_left, int8_t x_right, void *context);
-
-void graphics_fill_triangle_generic(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, fill_callback_t fill, void *fill_context);
+// Triangle filling is now implemented via triangle_impl.c template
 
 #pragma compile("bresenham.c")
