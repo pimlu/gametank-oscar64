@@ -11,19 +11,19 @@
 
 geof_t geometry_scale_geof(geof_t val, unitf_t scale);
 
-// this lame thing is because UnitF is unsigned
+// this lame thing is because unitf_t is unsigned
 typedef struct {
     unitf_t val;
     bool negated;
 } iunitf_t;
 
-typedef struct {
+struct coord {
     geof_t x, y, z;
-} coord_t;
+};
 
-typedef struct {
+struct coord2d {
     geof_t x, y;
-} coord2d_t;
+};
 
 #pragma compile("types.c")
 
