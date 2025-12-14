@@ -11,7 +11,7 @@ To build it, first [install Oscar64](https://github.com/drmortalwombat/oscar64/b
 
 ### Making your own game
 
-Simply add another folder to the `src/games` directory and copy paste hellodvd's `main.cpp` to get started. Then build it with: `./build.sh <folder name>`
+Simply add another folder to the `src/games` directory and copy paste hellodvd's `main.c` to get started. Then build it with: `./build.sh <folder name>`
 
 ### Oscar64 quirks
 
