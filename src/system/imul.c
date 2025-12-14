@@ -244,8 +244,7 @@ int16_t mul_shr24_sat0(int32_t x, uint16_t y, bool *oflag) {
     // Extract lower 8 bits of x (x0) and compute x0 * y
     // Split y into bytes: x0 * y = x0 * (y_low + y_high * 256)
     uint8_t x0 = x & 0xff;
-    uint32_t x0_y = (uint32_t)mul8_to_16(x0, (uint8_t)(y & 0xff)) + 
-                    ((uint32_t)mul8_to_16(x0, (uint8_t)(y >> 8)) << 8);
+    uint32_t x0_y = mul8_to_16(x0, y & 0xff) + ((uint32_t) mul8_to_16(x0, y >> 8) << 8);
     
     // Compute carry from lower bits: x2x1_y_low (bits [8:23]) + x0_y (bits [0:15])
     // The lower 16 bits of x2x1_y_full represent bits [8:23] in the final product
@@ -257,8 +256,8 @@ int16_t mul_shr24_sat0(int32_t x, uint16_t y, bool *oflag) {
     // x3 is at position 24, so (x3 * y) >> 24 = x3 * y (contributes directly)
     int8_t x3 = x >> 24;
     bool neg = x3 < 0;
-    uint16_t pos_x3 = neg ? -x3 : x3;
-    uint32_t x3_y_full = mul16_to_32(pos_x3, y);
+    uint8_t pos_x3 = neg ? -x3 : x3;  // pos_x3 is at most 128, fits in uint8_t
+    uint32_t x3_y_full = mul8_to_16(pos_x3, y & 0xff) + ((uint32_t)mul8_to_16(pos_x3, y >> 8) << 8);
     int32_t x3_y_shifted = neg ? -(int32_t)x3_y_full : (int32_t)x3_y_full;
 
     int32_t result_signed = (int32_t)x2x1_y + x3_y_shifted + (int32_t)carry;
