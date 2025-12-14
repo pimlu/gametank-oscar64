@@ -20,17 +20,17 @@ Oscar64 has some quirks (that maybe are just because I didn't fully set things u
 #### Data / BSS memory
 
 When you declare a variable, you can either initialize it, like:
-```
+```c
 uint8_t foo = 123;
 ```
 Or leave it uninitialized, like:
-```
+```c
 uint8_t foo;
 ```
 
-If you initialize `foo`, even though it's not const, Oscar64 will place it on the data section, meaning it goes into ROM and cannot be modified. Bad stuff will happen if you try to write to foo.
+If you initialize `foo` to anything (including 0), even though it's not const, Oscar64 will place it on the data section, meaning it goes into ROM and cannot be modified. Bad stuff will happen if you try to write to foo.
 
-If you leave`foo` uninitialized, Oscar64 will place it in the bss section, meaning it is writable, but it will start as 0. You'll need to initialize it yourself in an `init()` function. There is an example of this initializing `dx`/`dy` in hellodvd.
+If you leave `foo` uninitialized, Oscar64 will place it in the bss section, meaning it is writable, but it will start as 0. You'll need to initialize it yourself in an `init()` function. There is an example of this initializing `dx`/`dy` in hellodvd.
 
 #### ROM banks
 
