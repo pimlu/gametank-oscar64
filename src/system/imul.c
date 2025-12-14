@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <limits.h>
 
 
 #ifdef __OSCAR64C__
@@ -230,4 +231,39 @@ int32_t imul16_to_32(int16_t x, int16_t y) {
     }
     int32_t res = (int32_t) mul16_to_32(ux, uy);
     return neg ? -res : res;
+}
+
+
+// returns (x * y) >> 24
+// returns int16 result; sets *oflag if overflow, else clears it
+int16_t mul_shr24_sat0(int32_t x, uint16_t y, bool *oflag) {
+    uint16_t x2x1 = (x & 0x00ffff00) >> 8;
+    uint32_t x2x1_y_full = mul16_to_32(x2x1, y);
+    uint32_t x2x1_y = x2x1_y_full >> 16;
+    
+    // Extract lower 8 bits of x (x0) and compute x0 * y
+    // Split y into bytes: x0 * y = x0 * (y_low + y_high * 256)
+    uint8_t x0 = x & 0xff;
+    uint32_t x0_y = (uint32_t)mul8_to_16(x0, (uint8_t)(y & 0xff)) + 
+                    ((uint32_t)mul8_to_16(x0, (uint8_t)(y >> 8)) << 8);
+    
+    // Compute carry from lower bits: x2x1_y_low (bits [8:23]) + x0_y (bits [0:15])
+    // The lower 16 bits of x2x1_y_full represent bits [8:23] in the final product
+    uint16_t x2x1_y_low = x2x1_y_full & 0xffff;
+    uint32_t low_sum = x0_y + ((uint32_t)x2x1_y_low << 8);
+    uint32_t carry = low_sum >> 24;
+
+    // Extract top byte of x (x3) and compute its contribution
+    // x3 is at position 24, so (x3 * y) >> 24 = x3 * y (contributes directly)
+    int8_t x3 = x >> 24;
+    bool neg = x3 < 0;
+    uint16_t pos_x3 = neg ? -x3 : x3;
+    uint32_t x3_y_full = mul16_to_32(pos_x3, y);
+    int32_t x3_y_shifted = neg ? -(int32_t)x3_y_full : (int32_t)x3_y_full;
+
+    int32_t result_signed = (int32_t)x2x1_y + x3_y_shifted + (int32_t)carry;
+    
+    bool overflow = result_signed < INT16_MIN || result_signed > INT16_MAX;
+    *oflag = overflow;
+    return overflow ? 0 : result_signed;
 }
