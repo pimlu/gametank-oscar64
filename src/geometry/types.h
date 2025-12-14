@@ -11,6 +11,9 @@
 
 geof_t geometry_scale_geof(geof_t val, unitf_t scale);
 
+// oscar64 doesn't like ternary operators on structs
+geof_t geof_cond(bool cond, geof_t true_val, geof_t false_val);
+
 // this lame thing is because unitf_t is unsigned
 typedef struct {
     unitf_t val;

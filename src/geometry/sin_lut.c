@@ -24,17 +24,17 @@ static unitf_t sin_lookup(geof_t x) {
 }
 
 static unitf_t sin_wrap(geof_t x) {
-    geof_t threshold = {GEOF_FROM_DOUBLE(32.0)};
+    geof_t threshold = {GEOF_SIN_THRESHOLD};
     if (geof_le(x, threshold)) {
         return sin_lookup(x);
     } else {
-        geof_t val = {GEOF_FROM_DOUBLE(64.0)};
+        geof_t val = {GEOF_SIN_RANGE};
         return sin_lookup(geof_sub(val, x));
     }
 }
 
 iunitf_t geometry_sin(geof_t x) {
-    geof_t zero = geof_zero();
+    geof_t zero = {GEOF_ZERO};
     iunitf_t result;
     if (geof_ge(x, zero)) {
         result.val = sin_wrap(x);
@@ -48,12 +48,12 @@ iunitf_t geometry_sin(geof_t x) {
 
 iunitf_t geometry_cos(geof_t x) {
     // prevent overflow by looping back around
-    geof_t threshold = {GEOF_FROM_DOUBLE(-32.0)};
+    geof_t threshold = {GEOF_SIN_NEG_THRESHOLD};
     if (geof_le(x, threshold)) {
-        geof_t val1 = {GEOF_FROM_DOUBLE(32.0 - 128.0)};
+        geof_t val1 = {GEOF_SIN_VAL1};
         return geometry_sin(geof_sub(val1, x));
     }
-    geof_t val2 = {GEOF_FROM_DOUBLE(32.0)};
+    geof_t val2 = {GEOF_SIN_THRESHOLD};
     return geometry_sin(geof_sub(val2, x));
 }
 

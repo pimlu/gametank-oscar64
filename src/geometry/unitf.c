@@ -16,11 +16,6 @@ unitf_t unitf_from_raw_bytes(uint8_t lsb, uint8_t msb) {
     return result;
 }
 
-unitf_t unitf_zero(void) {
-    unitf_t result = {0};
-    return result;
-}
-
 // Accessors
 uint16_t unitf_get_raw(unitf_t val) {
     return val.data;

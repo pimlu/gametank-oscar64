@@ -27,6 +27,10 @@ def main():
     with open(geometry_constants_file, 'w') as f:
         f.write(codegen.gen_fixed_constants())
     
+    polyfish_constants_file = os.path.join(src_dir, 'games', 'polyfish', 'constants.h')
+    with open(polyfish_constants_file, 'w') as f:
+        f.write(codegen.gen_polyfish_constants())
+    
 
 if __name__ == '__main__':
     main()

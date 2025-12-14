@@ -10,9 +10,6 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-// Macro to convert double to unitf raw value
-#define UNITF_FROM_DOUBLE(value) ((uint16_t)((value) * 65536.0 + 0.5))
-
 typedef struct {
     uint16_t data;
 } unitf_t;
@@ -20,7 +17,6 @@ typedef struct {
 // Constructors
 unitf_t unitf_from_raw(uint16_t data);
 unitf_t unitf_from_raw_bytes(uint8_t lsb, uint8_t msb);
-unitf_t unitf_zero(void);
 
 // Accessors
 uint16_t unitf_get_raw(unitf_t val);

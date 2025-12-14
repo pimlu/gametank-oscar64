@@ -26,6 +26,6 @@ if ! [ -d "src/games/$1" ]; then
 fi
 
 
-oscar64 -v -i=src/ -tf=bin -xz -tm=c64 -n -O3 "src/games/$1/main.c" -o=output.bin
+oscar64 -v -i="$(pwd)/src/" -tf=bin -xz -tm=c64 -n -O3 "src/games/$1/main.c" -o=output.bin
 
 python3 asm2gametank.py output.asm gametank.bin

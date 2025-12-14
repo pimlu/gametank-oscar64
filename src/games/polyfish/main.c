@@ -13,11 +13,17 @@
 #include "geometry/types.h"
 #include "geometry/geof.h"
 #include "geometry/sin_lut.h"
+#include "geometry/camera.h"
+#include "geometry/cube.h"
+#include "geometry/angle.h"
+#include "geometry/projection.h"
 
-#include "geometry/constants.h"
+#include "fish.h"
+#include "horizon.h"
+#include "constants.h"
 
-#pragma code(code63)
-#pragma data(data63)
+#pragma code(code62)
+#pragma data(data62)
 #pragma bss(bss)
 
 void init(void);
@@ -26,66 +32,97 @@ void tick(void);
 void game_start(void) {
     mul_init();
 
-    init();
+    bcr_reset_irq();
+
+    scr_set_default_video_flags();
     
-    // geof_t foo = {GEOF_FROM_DOUBLE(1.2)};
-    // geof_t baz = {GEOF_FROM_DOUBLE(2.5)};
-    // geof_t quz = geof_mul(foo, baz);
-    // *(volatile int16_t*) 0x2008 = geof_get_raw(quz);
-
-    // iunitf_t bar = geometry_sin((geof_t){GEOF_FROM_DOUBLE(32.0/3.0)});
-    // *(volatile int16_t*) 0x2008 = unitf_get_raw(bar.val);
-
-    // iunitf_t bar = geometry_sin((geof_t){GEOF_PI / 6});
-    // *(volatile int16_t*) 0x2008 = unitf_get_raw(bar);
     scr_flip_framebuffer();
 
+    // hue has to be nonzero for some reason to make the blitter work
+    uint8_t black = (uint8_t) ~0b00100000;
+    graphics_clear_border(black);
+    scr_flip_framebuffer();
+    graphics_clear_border(black);
+
+    scr_set_enable_vblank_nmi(true);
+
+    struct camera camera;
+    camera.mat = projection_matrix_default();
+    camera.proj_frame = 0;
+    geof_t heading_theta = {GEOF_CAMERA_HEADING_THETA};
+    geof_t pitch_theta = {GEOF_CAMERA_PITCH_THETA};
+    angle_set_theta(&camera.rotation.heading, heading_theta);
+    angle_set_theta(&camera.rotation.pitch, pitch_theta);
+
+    camera.position.x = (geof_t){GEOF_CAMERA_POS_X};
+    camera.position.y = (geof_t){GEOF_CAMERA_POS_Y};
+    camera.position.z = (geof_t){GEOF_CAMERA_POS_Z};
+
+    uint8_t cube_colors[6] = {
+        (uint8_t) ~0b00001101,
+        (uint8_t) ~0b00001101,
+        (uint8_t) ~0b00001010,
+        (uint8_t) ~0b00001110,
+        (uint8_t) ~0b00001101,
+        (uint8_t) ~0b00001100
+    };
+
+    struct cube cube;
+    cube.lo.x = (geof_t){GEOF_ZERO};
+    cube.lo.y = (geof_t){GEOF_ZERO};
+    cube.lo.z = (geof_t){GEOF_ZERO};
+    cube.hi.x = (geof_t){GEOF_CUBE_HI};
+    cube.hi.y = (geof_t){GEOF_CUBE_HI};
+    cube.hi.z = (geof_t){GEOF_CUBE_HI};
+    for (uint8_t i = 0; i < 6; i++) {
+        cube.colors[i] = cube_colors[i];
+    }
+
+    uint8_t fish_colors[3] = {
+        (uint8_t) ~0b01111100,
+        (uint8_t) ~0b01111101,
+        (uint8_t) ~0b01110010,
+    };
+    
+    struct fish fish1;
+    fish1.base_pos.x = (geof_t){GEOF_ZERO};
+    fish1.base_pos.y = (geof_t){GEOF_FISH_BASE_Y};
+    fish1.base_pos.z = (geof_t){GEOF_ZERO};
+    geof_t zero_angle = (geof_t){GEOF_ZERO};
+    angle_set_theta(&fish1.angle, zero_angle);
+    for (uint8_t i = 0; i < 3; i++) {
+        fish1.colors[i] = fish_colors[i];
+    }
 
     for (;;) {
-        scr_set_enable_vblank_nmi(false);
+        bcr_reset_irq();
+        wait_for_interrupt(); // wait for next interrupt (vblank nmi)
 
-        tick();
         scr_flip_framebuffer();
         
-        scr_set_enable_vblank_nmi(true);
-        wait_for_interrupt();
+
+        uint16_t gamepad1 = scr_read_gamepad1();
+
+        camera_tick_frame(&camera);
+        camera_update_from_gamepad(&camera, gamepad1);
+
+        geof_t pitch_theta_val = angle_get_theta(&camera.rotation.pitch);
+        geof_t neg_four = {GEOF_HORIZON_NEG_FOUR};
+        geof_t horizon_pos_val = geof_mul(pitch_theta_val, neg_four);
+        geof_t five = {GEOF_HORIZON_FIVE};
+        geof_t pos_y_contrib = geof_mul(camera.position.y, five);
+        geof_t horizon_pos = geof_sub(horizon_pos_val, pos_y_contrib);
+        draw_horizon(horizon_pos);
+
+        geof_t cube_dist = cube_calc_distance(&cube, &camera);
+        geof_t fish_dist = fish_calc_distance(&fish1, &camera);
+
+        if (geof_lt(cube_dist, fish_dist)) {
+            fish_paint(&fish1, &camera);
+            cube_paint(&cube, &camera);
+        } else {
+            cube_paint(&cube, &camera);
+            fish_paint(&fish1, &camera);
+        }
     }
-}
-
-
-uint8_t blue = (uint8_t) ~0b11011100;
-uint8_t red  = (uint8_t) ~0b01011110;
-
-uint8_t size = 10;
-
-uint8_t x, y;
-int8_t dx, dy;
-
-void init(void) {
-    x = 20;
-    y = 70;
-
-    dx = 1;
-    dy = 1;
-}
-
-// draw a bouncing box on the screen
-void tick(void) {
-    *(volatile uint8_t*) 0x2008 = 0xf0;
-    graphics_clear_screen(blue);
-    *(volatile uint8_t*) 0x2008 = 0xa1;
-    *(volatile int8_t*) 0x2008 = 1;
-
-    graphics_fill_triangle((struct graphics_screen_pos){-10,-10}, (struct graphics_screen_pos){20,10}, (struct graphics_screen_pos){30, 30}, red);
-
-    if (x + dx < GRAPHICS_FRAME_X_LO || x + size + dx >= GRAPHICS_FRAME_X_HI) {
-        dx = -dx;
-    }
-
-    if (y + dy < GRAPHICS_FRAME_Y_LO || y + size + dy >= GRAPHICS_FRAME_Y_HI) {
-        dy = -dy;
-    }
-
-    x += dx;
-    y += dy;
 }

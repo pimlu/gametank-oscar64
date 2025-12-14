@@ -4,6 +4,9 @@
 #pragma data(data63)
 #pragma bss(bss)
 
+// geof can overflow, it will warn with invalid value range unless we disable
+#pragma warning(disable: 2017)
+
 // Constructors
 geof_t geof_from_raw(int16_t data) {
     geof_t result = {data};
@@ -13,11 +16,6 @@ geof_t geof_from_raw(int16_t data) {
 geof_t geof_from_raw_bytes(uint8_t lsb, uint8_t msb) {
     int16_t data = (msb << 8) | lsb;
     geof_t result = {data};
-    return result;
-}
-
-geof_t geof_zero(void) {
-    geof_t result = {0};
     return result;
 }
 

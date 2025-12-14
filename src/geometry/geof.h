@@ -10,9 +10,6 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-// Macro to convert double to geof raw value
-#define GEOF_FROM_DOUBLE(value) ((int16_t)((value) >= 0 ? ((value) * 256.0 + 0.5) : ((value) * 256.0 - 0.5)))
-
 typedef struct {
     int16_t data;
 } geof_t;
@@ -20,7 +17,6 @@ typedef struct {
 // Constructors
 geof_t geof_from_raw(int16_t data);
 geof_t geof_from_raw_bytes(uint8_t lsb, uint8_t msb);
-geof_t geof_zero(void);
 
 // Accessors
 int16_t geof_get_raw(geof_t val);
