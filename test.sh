@@ -13,6 +13,7 @@ clang -D__TEST__ \
     -I. -Isrc \
     tests/bresenham_test.c \
     src/graphics/bresenham.c \
+    src/graphics/bresenham_ref.c \
     src/graphics/types.c \
     src/system/i8helpers.c \
     src/system/imul.c \
