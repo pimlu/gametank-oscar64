@@ -40,7 +40,7 @@ void bresenham_core_init(struct bresenham_core *core, struct graphics_screen_pos
     }
     core->e = dy - dx;
 
-    core->two_dy_sub_two_dx = 2 * dy - 2 * dx;
+    core->two_dy_sub_two_dx = 2 * (dy - dx);
     core->two_dx = 2 * dx;
 
     if (!core->is_excl && core->e == 0) {
