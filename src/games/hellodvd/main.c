@@ -50,6 +50,7 @@ void tick(void) {
     graphics_clear_screen(blue);
 
     bcr_draw_box(x, y, size, size, red);
+    wait_for_interrupt();
 
     if (x + dx < GRAPHICS_FRAME_X_LO || x + size + dx >= GRAPHICS_FRAME_X_HI) {
         dx = -dx;
