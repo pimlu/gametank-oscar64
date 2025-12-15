@@ -16,10 +16,6 @@ DEFINE_MEMREG(bcr_reg_start, 0x4006);
 DEFINE_MEMREG(bcr_reg_color, 0x4007);
 
 void bcr_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c) {
-    __asm {
-        sei
-    };
-
     scr_set_colorfill_mode(true);
 
     bcr_reg_vx_write(x);
@@ -29,10 +25,6 @@ void bcr_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c) {
     bcr_reg_color_write(c);
     
     bcr_reg_start_write(1);
-    __asm {
-        cli
-        byt 0xcb // wai
-    };
 }
 
 void bcr_reset_irq(void) {
@@ -48,9 +40,9 @@ void bcr_setup_row_fill(uint8_t c) {
 static uint8_t write_times;
 
 void bcr_trigger_row_fill(uint8_t x, uint8_t y, uint8_t w) {
-    __asm {
-        sei
-    };
+    // __asm {
+    //     sei
+    // };
 
     // if (write_times < 4) {
     //     write_times++;
@@ -72,8 +64,8 @@ void bcr_row_fill_wait(void) {
     // if (write_times < 4) {
     //     *(volatile uint8_t*) 0x2008 = 0x43;
     // }
-    __asm volatile {
-        cli
-        // byt 0xcb // wai
-    };
+    // __asm volatile {
+    //     cli
+    //     // byt 0xcb // wai
+    // };
 }

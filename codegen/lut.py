@@ -9,8 +9,8 @@ def gen_sin_lut_data():
 
 #include "lut.h"
 
-#pragma code(code63)
-#pragma data(data63)
+#pragma code(code62)
+#pragma data(data62)
 #pragma bss(bss)
 
 {lut}
@@ -57,8 +57,8 @@ def gen_recip_lut_data():
 
 #include "lut.h"
 
-#pragma code(code63)
-#pragma data(data63)
+#pragma code(code62)
+#pragma data(data62)
 #pragma bss(bss)
 
 {lut}

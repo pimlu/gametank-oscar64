@@ -29,7 +29,25 @@
 void init(void);
 void tick(void);
 
+static camera_t camera;
+static cube_t cube;
+static fish_t fish1;
+
 void game_start(void) {
+    init();
+
+    for (;;) {
+        scr_set_enable_vblank_nmi(false);
+
+        tick();
+        scr_flip_framebuffer();
+        
+        scr_set_enable_vblank_nmi(true);
+        wait_for_interrupt();
+    }
+}
+
+void init(void) {
     mul_init();
 
     bcr_reset_irq();
@@ -44,9 +62,6 @@ void game_start(void) {
     scr_flip_framebuffer();
     graphics_clear_border(black);
 
-    scr_set_enable_vblank_nmi(true);
-
-    struct camera camera;
     camera.mat = projection_matrix_default();
     camera.proj_frame = 0;
     geof_t heading_theta = {GEOF_CAMERA_HEADING_THETA};
@@ -67,7 +82,6 @@ void game_start(void) {
         (uint8_t) ~0b00001100
     };
 
-    struct cube cube;
     cube.lo.x = (geof_t){GEOF_ZERO};
     cube.lo.y = (geof_t){GEOF_ZERO};
     cube.lo.z = (geof_t){GEOF_ZERO};
@@ -84,7 +98,6 @@ void game_start(void) {
         (uint8_t) ~0b01110010,
     };
     
-    struct fish fish1;
     fish1.base_pos.x = (geof_t){GEOF_ZERO};
     fish1.base_pos.y = (geof_t){GEOF_FISH_BASE_Y};
     fish1.base_pos.z = (geof_t){GEOF_ZERO};
@@ -93,36 +106,30 @@ void game_start(void) {
     for (uint8_t i = 0; i < 3; i++) {
         fish1.colors[i] = fish_colors[i];
     }
+}
 
-    for (;;) {
-        bcr_reset_irq();
-        wait_for_interrupt(); // wait for next interrupt (vblank nmi)
+void tick(void) {
+    uint16_t gamepad1 = scr_read_gamepad1();
 
-        scr_flip_framebuffer();
-        
+    camera_tick_frame(&camera);
+    camera_update_from_gamepad(&camera, gamepad1);
 
-        uint16_t gamepad1 = scr_read_gamepad1();
+    geof_t pitch_theta_val = angle_get_theta(&camera.rotation.pitch);
+    geof_t neg_four = {GEOF_HORIZON_NEG_FOUR};
+    geof_t horizon_pos_val = geof_mul(pitch_theta_val, neg_four);
+    geof_t five = {GEOF_HORIZON_FIVE};
+    geof_t pos_y_contrib = geof_mul(camera.position.y, five);
+    geof_t horizon_pos = geof_sub(horizon_pos_val, pos_y_contrib);
+    draw_horizon(horizon_pos);
 
-        camera_tick_frame(&camera);
-        camera_update_from_gamepad(&camera, gamepad1);
+    geof_t cube_dist = cube_calc_distance(&cube, &camera);
+    geof_t fish_dist = fish_calc_distance(&fish1, &camera);
 
-        geof_t pitch_theta_val = angle_get_theta(&camera.rotation.pitch);
-        geof_t neg_four = {GEOF_HORIZON_NEG_FOUR};
-        geof_t horizon_pos_val = geof_mul(pitch_theta_val, neg_four);
-        geof_t five = {GEOF_HORIZON_FIVE};
-        geof_t pos_y_contrib = geof_mul(camera.position.y, five);
-        geof_t horizon_pos = geof_sub(horizon_pos_val, pos_y_contrib);
-        draw_horizon(horizon_pos);
-
-        geof_t cube_dist = cube_calc_distance(&cube, &camera);
-        geof_t fish_dist = fish_calc_distance(&fish1, &camera);
-
-        if (geof_lt(cube_dist, fish_dist)) {
-            fish_paint(&fish1, &camera);
-            cube_paint(&cube, &camera);
-        } else {
-            cube_paint(&cube, &camera);
-            fish_paint(&fish1, &camera);
-        }
+    if (geof_lt(cube_dist, fish_dist)) {
+        fish_paint(&fish1, &camera);
+        cube_paint(&cube, &camera);
+    } else {
+        cube_paint(&cube, &camera);
+        fish_paint(&fish1, &camera);
     }
 }

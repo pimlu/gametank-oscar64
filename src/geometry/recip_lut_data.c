@@ -2,8 +2,8 @@
 
 #include "lut.h"
 
-#pragma code(code63)
-#pragma data(data63)
+#pragma code(code62)
+#pragma data(data62)
 #pragma bss(bss)
 
 const struct lut recip_lut = {

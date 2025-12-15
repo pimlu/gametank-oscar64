@@ -29,7 +29,7 @@ z   y
 0-------1
 */
 
-geof_t cube_calc_distance(struct cube *cube, struct camera *cam) {
+geof_t cube_calc_distance(cube_t *cube, camera_t *cam) {
     geof_t tot_z = {GEOF_ZERO};
     for (uint8_t i = 0; i < 8; i++) {
         geof_t x = geof_cond(i & 1, cube->hi.x, cube->lo.x);
@@ -48,7 +48,7 @@ geof_t cube_calc_distance(struct cube *cube, struct camera *cam) {
 
 // #define TRIANGLE(ai, bi, ci) ((struct triangle){cube->verts[ai], cube->verts[bi], cube->verts[ci]})
 
-void cube_paint(struct cube *cube, struct camera *cam) {
+void cube_paint(cube_t *cube, camera_t *cam) {
     struct coord pos = cam->position;
     struct triangle tri;
     #define TRIANGLE(ai, bi, ci) {tri.a = cube->verts[ai]; tri.b = cube->verts[bi]; tri.c = cube->verts[ci];}
@@ -89,7 +89,7 @@ void cube_paint(struct cube *cube, struct camera *cam) {
     }
 }
 
-struct coord cube_debug_get_vert(const struct cube *cube, uint8_t i) {
+struct coord cube_debug_get_vert(const cube_t *cube, uint8_t i) {
     return cube->verts[i];
 }
 

@@ -12,11 +12,11 @@ const geof_t geometry_pan_speed = {GEOF_CAMERA_PAN_SPEED};
 const geof_t geometry_pitch_speed = {GEOF_CAMERA_PITCH_SPEED};
 const geof_t geometry_travel_speed = {GEOF_CAMERA_TRAVEL_SPEED};
 
-void camera_tick_frame(struct camera *cam) {
+void camera_tick_frame(camera_t *cam) {
     cam->proj_frame++;
 }
 
-void camera_update_from_gamepad(struct camera *cam, uint16_t pad) {
+void camera_update_from_gamepad(camera_t *cam, uint16_t pad) {
     if (pad & INPUT_MASK_LEFT) {
         angle_adjust(&cam->rotation.heading, geof_neg(geometry_pan_speed));
     }
@@ -43,7 +43,7 @@ void camera_update_from_gamepad(struct camera *cam, uint16_t pad) {
     }
 }
 
-struct coord camera_project(const struct camera *cam, struct coord cc) {
+struct coord camera_project(const camera_t *cam, struct coord cc) {
     struct coord translated;
     translated.x = geof_sub(cc.x, cam->position.x);
     translated.y = geof_sub(cc.y, cam->position.y);
@@ -54,7 +54,7 @@ struct coord camera_project(const struct camera *cam, struct coord cc) {
     return projected;
 }
 
-geof_t camera_get_horizon_pos(const struct camera *cam, struct rotation angle) {
+geof_t camera_get_horizon_pos(const camera_t *cam, struct rotation angle) {
     geof_t z_val = {GEOF_CAMERA_HORIZON_Z};
     struct coord p = projection_matrix_project(&cam->mat, rotation_apply(&angle, (struct coord){{GEOF_ZERO}, {GEOF_ZERO}, z_val}));
     return p.y;

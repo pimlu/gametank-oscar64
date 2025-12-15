@@ -11,7 +11,7 @@
 #pragma data(data62)
 #pragma bss(bss)
 
-static void fish_vertex(struct fish *fish, struct camera *cam, uint8_t i, geof_t x, geof_t y) {
+static void fish_vertex(fish_t *fish, camera_t *cam, uint8_t i, geof_t x, geof_t y) {
     // Calculate px, pz from angle.apply({3.0, 0.0})
     struct coord2d applied_main = angle_apply(&fish->angle, (struct coord2d){{GEOF_FISH_MAIN_OFFSET}, {GEOF_ZERO}});
     geof_t px = applied_main.x;
@@ -37,7 +37,7 @@ static void fish_vertex(struct fish *fish, struct camera *cam, uint8_t i, geof_t
     fish->verts[i] = camera_project(cam, world_pos);
 }
 
-geof_t fish_calc_distance(struct fish *fish, struct camera *cam) {
+geof_t fish_calc_distance(fish_t *fish, camera_t *cam) {
     geof_t adjust_val = {GEOF_FISH_ADJUST};
     angle_adjust(&fish->angle, adjust_val);
     
@@ -55,7 +55,7 @@ geof_t fish_calc_distance(struct fish *fish, struct camera *cam) {
 
 #define TRIANGLE(a, b, c) ((struct triangle){fish->verts[a], fish->verts[b], fish->verts[c]})
 
-void fish_paint(struct fish *fish, struct camera *cam) {
+void fish_paint(fish_t *fish, camera_t *cam) {
     // front
     geometry_fill_triangle(cam, &TRIANGLE(0, 1, 2), fish->colors[0]);
 

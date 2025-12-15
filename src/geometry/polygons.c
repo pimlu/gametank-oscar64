@@ -20,7 +20,7 @@ struct graphics_screen_pos geometry_to_screen(struct coord c) {
     return result;
 }
 
-void geometry_fill_triangle(const struct camera *cam, struct triangle *t, uint8_t color) {
+void geometry_fill_triangle(const camera_t *cam, struct triangle *t, uint8_t color) {
     geof_t zero = {GEOF_ZERO};
     if (geof_le(t->a.z, zero) || geof_eq(t->b.z, zero) || geof_eq(t->c.z, zero)) {
         return;

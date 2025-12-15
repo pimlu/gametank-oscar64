@@ -43,3 +43,4 @@ int8_t bresenham_reference_iter(bresenham_reference_t *ref);
 
 
 #pragma compile("bresenham_ref.c")
+
