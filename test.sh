@@ -54,6 +54,35 @@ fi
 # Cleanup mul test
 rm -f /tmp/mul_test
 
+# Compile the LUT test
+clang -D__TEST__ \
+    -I. -Isrc \
+    tests/test_lut.c \
+    src/geometry/lut.c \
+    src/geometry/sin_lut.c \
+    src/geometry/recip_lut.c \
+    src/geometry/sin_lut_data.c \
+    src/geometry/recip_lut_data.c \
+    src/geometry/geof.c \
+    src/geometry/unitf.c \
+    src/geometry/types.c \
+    src/system/imul.c \
+    -o /tmp/lut_test \
+    -Wall -Wextra -Werror -Wno-unknown-pragmas -Wno-ignored-pragmas -lm
+
+# Run the test
+/tmp/lut_test
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "LUT tests failed with exit code $EXIT_CODE"
+    rm -f /tmp/lut_test
+    exit $EXIT_CODE
+fi
+
+# Cleanup LUT test
+rm -f /tmp/lut_test
+
 echo "All tests passed!"
 exit 0
 

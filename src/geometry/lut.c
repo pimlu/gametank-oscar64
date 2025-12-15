@@ -18,6 +18,7 @@ unitf_t lut_lookup(const struct lut *lut, uint8_t i) {
 }
 
 unitf_t lut_lerp(const struct lut *lut, const struct lut_config *config, unitf_t a, unitf_t b, uint8_t frac) {
+    (void)lut;  // Unused parameter - kept for API consistency
     int16_t step_raw = geof_get_raw(config->step);
     uint8_t step_bits = bit_length(step_raw);
     uint8_t rem_bits = 8 - step_bits;
