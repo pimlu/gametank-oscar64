@@ -59,13 +59,3 @@ void bcr_trigger_row_fill(uint8_t x, uint8_t y, uint8_t w) {
 
     bcr_reg_start_write(1);
 }
-
-void bcr_row_fill_wait(void) {
-    // if (write_times < 4) {
-    //     *(volatile uint8_t*) 0x2008 = 0x43;
-    // }
-    // __asm volatile {
-    //     cli
-    //     // byt 0xcb // wai
-    // };
-}

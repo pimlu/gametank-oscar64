@@ -4,7 +4,6 @@
 // Required defines:
 //   TRIANGLE_FUNC_NAME - function name (e.g., graphics_fill_triangle_prod, graphics_fill_triangle_ref)
 //   TRIANGLE_FILL_CALL - fill callback function name (e.g., fill_triangle_callback)
-//   TRIANGLE_FILL_CTX - fill context type (e.g., struct fill_triangle_context)
 //   TRIANGLE_BRES_STRUCT - bresenham struct type (e.g., struct bresenham)
 //   TRIANGLE_BRES_INIT_CALL - bresenham init function (e.g., bresenham_init)
 //   TRIANGLE_BRES_ITER_CALL - bresenham iter function (e.g., bresenham_iter)
@@ -16,7 +15,7 @@
 #include "types.h"
 #include "system/imul.h"
 
-void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, TRIANGLE_FILL_CTX *fill_context) {
+void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c) {
     // sort them so a.y <= b.y <= c.y
     if (a.y > b.y) graphics_swap_pos(&a, &b);
     if (b.y > c.y) graphics_swap_pos(&b, &c);
@@ -53,7 +52,7 @@ void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos
     for (; y < b.y; y++) {
         int8_t x_left = TRIANGLE_BRES_ITER_CALL(&left_bres);
         int8_t x_right = TRIANGLE_BRES_ITER_CALL(&right_bres);
-        TRIANGLE_FILL_CALL(y, x_left, x_right, fill_context);
+        TRIANGLE_FILL_CALL(y, x_left, x_right);
     }
 
     // we've now reached b (vertically speaking) and need to replace it with c
@@ -67,13 +66,12 @@ void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos
     for (; y < c.y; y++) {
         int8_t x_left = TRIANGLE_BRES_ITER_CALL(&left_bres);
         int8_t x_right = TRIANGLE_BRES_ITER_CALL(&right_bres);
-        TRIANGLE_FILL_CALL(y, x_left, x_right, fill_context);
+        TRIANGLE_FILL_CALL(y, x_left, x_right);
     }
 }
 
 #undef TRIANGLE_FUNC_NAME
 #undef TRIANGLE_FILL_CALL
-#undef TRIANGLE_FILL_CTX
 #undef TRIANGLE_BRES_STRUCT
 #undef TRIANGLE_BRES_INIT_CALL
 #undef TRIANGLE_BRES_ITER_CALL

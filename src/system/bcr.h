@@ -20,6 +20,5 @@ void bcr_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c);
 void bcr_reset_irq(void);
 void bcr_setup_row_fill(uint8_t c);
 void bcr_trigger_row_fill(uint8_t x, uint8_t y, uint8_t w);
-void bcr_row_fill_wait(void);
 
 #pragma compile("bcr.c")
