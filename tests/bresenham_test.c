@@ -199,6 +199,23 @@ typedef struct {
 extern void graphics_fill_triangle_ref(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, test_fill_context_t *fill_context);
 extern void graphics_fill_triangle_impl(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, test_fill_context_t *fill_context);
 
+// Helper function to build result string from bits array
+static char *build_result_string(bool **bits, size_t w, size_t h) {
+    size_t result_size = h * (w + 1) + 1;  // h rows * (w chars + 1 newline) + null terminator
+    char *result = malloc(result_size * sizeof(char));
+    size_t pos = 0;
+    
+    for (size_t y = 0; y < h; y++) {
+        for (size_t x = 0; x < w; x++) {
+            result[pos++] = bits[y][x] ? '#' : '.';
+        }
+        result[pos++] = '\n';
+    }
+    result[pos] = '\0';
+    
+    return result;
+}
+
 static bool test_combo_ref(const bres_test_t *test, 
                            struct graphics_screen_pos a, 
                            struct graphics_screen_pos b, 
@@ -227,18 +244,7 @@ static bool test_combo_ref(const bres_test_t *test,
     }
     
     // Build result string
-    size_t result_size = test->h * (test->w + 1) + 2;
-    char *result = malloc(result_size * sizeof(char));
-    size_t pos = 0;
-    result[pos++] = '\n';
-    
-    for (size_t y = 0; y < test->h; y++) {
-        for (size_t x = 0; x < test->w; x++) {
-            result[pos++] = bits[y][x] ? '#' : '.';
-        }
-        result[pos++] = '\n';
-    }
-    result[pos] = '\0';
+    char *result = build_result_string(bits, test->w, test->h);
     
     bool match = (strcmp(result, test->answer_str) == 0);
     
@@ -284,18 +290,7 @@ static bool test_combo_impl(const bres_test_t *test,
     }
     
     // Build result string
-    size_t result_size = test->h * (test->w + 1) + 2;
-    char *result = malloc(result_size * sizeof(char));
-    size_t pos = 0;
-    result[pos++] = '\n';
-    
-    for (size_t y = 0; y < test->h; y++) {
-        for (size_t x = 0; x < test->w; x++) {
-            result[pos++] = bits[y][x] ? '#' : '.';
-        }
-        result[pos++] = '\n';
-    }
-    result[pos] = '\0';
+    char *result = build_result_string(bits, test->w, test->h);
     
     // For production, compare against reference output
     test_fill_context_t ref_ctx = {
@@ -311,16 +306,7 @@ static bool test_combo_impl(const bres_test_t *test,
     graphics_fill_triangle_ref(a, b, c, &ref_ctx);
     
     // Build reference result string
-    char *ref_result = malloc(result_size * sizeof(char));
-    pos = 0;
-    ref_result[pos++] = '\n';
-    for (size_t y = 0; y < test->h; y++) {
-        for (size_t x = 0; x < test->w; x++) {
-            ref_result[pos++] = ref_ctx.bits[y][x] ? '#' : '.';
-        }
-        ref_result[pos++] = '\n';
-    }
-    ref_result[pos] = '\0';
+    char *ref_result = build_result_string(ref_ctx.bits, test->w, test->h);
     
     bool match = (strcmp(result, ref_result) == 0);
     
@@ -370,7 +356,6 @@ static bool test_all_combos_impl(const bres_test_t *test) {
 static const bres_test_t suite[] = {
     {
         6, 4,
-        "\n"
         "......\n"
         ".##...\n"
         ".####.\n"
@@ -379,7 +364,6 @@ static const bres_test_t suite[] = {
     },
     {
         4, 4,
-        "\n"
         "....\n"
         ".#..\n"
         "....\n"
@@ -388,7 +372,6 @@ static const bres_test_t suite[] = {
     },
     {
         4, 4,
-        "\n"
         "....\n"
         "..#.\n"
         ".##.\n"
@@ -397,7 +380,6 @@ static const bres_test_t suite[] = {
     },
     {
         7, 3,
-        "\n"
         "....#..\n"
         ".###...\n"
         ".......\n",
@@ -405,7 +387,6 @@ static const bres_test_t suite[] = {
     },
     {
         7, 3,
-        "\n"
         ".....#.\n"
         "....##.\n"
         ".....##\n",
@@ -413,7 +394,6 @@ static const bres_test_t suite[] = {
     },
     {
         4, 4,
-        "\n"
         "....\n"
         "#...\n"
         "##..\n"
@@ -422,7 +402,6 @@ static const bres_test_t suite[] = {
     },
     {
         6, 3,
-        "\n"
         ".#####\n"
         "...###\n"
         ".....#\n",
@@ -430,7 +409,6 @@ static const bres_test_t suite[] = {
     },
     {
         6, 3,
-        "\n"
         "#####.\n"
         "###...\n"
         "#.....\n",
@@ -438,7 +416,6 @@ static const bres_test_t suite[] = {
     },
     {
         6, 3,
-        "\n"
         ".####.\n"
         "###...\n"
         "#.....\n",
@@ -446,12 +423,27 @@ static const bres_test_t suite[] = {
     },
     {
         7, 3,
-        "\n"
         ".#####.\n"
         "...###.\n"
         "......#\n",
         {0, 0}, {6, 0}, {7, 3}
     },
+    {
+        9,12,
+        ".....###.\n"
+        "...####..\n"
+        "...###...\n"
+        "..###....\n"
+        "..###....\n"
+        "..##.....\n"
+        ".##......\n"
+        ".##......\n"
+        ".#.......\n"
+        "#........\n"
+        ".........\n"
+        ".........\n",
+        {3, 1}, {8, 0}, {0, 11}
+    }
 };
 
 // Comparison test
