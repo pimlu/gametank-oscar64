@@ -4,9 +4,10 @@
 #pragma data(data63)
 #pragma bss(bss)
 
+// returns log2(x), so for x = 2^n
 static uint8_t bit_length(int16_t x) {
     uint8_t shift = 0;
-    while (x > 0) {
+    while (x > 1) {
         x >>= 1;
         shift++;
     }
