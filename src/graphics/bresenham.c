@@ -24,14 +24,10 @@ static void bresenham_core_inc(struct bresenham_core *core) {
     }
 }
 
-void bresenham_core_init(struct bresenham_core *core, struct graphics_screen_pos a, struct graphics_screen_pos b, bool flip_excl) {
+void bresenham_core_init(struct bresenham_core *core, struct graphics_screen_pos a, struct graphics_screen_pos b) {
     core->x_l = a.x;
     uint8_t dy = b.y - a.y;
     core->is_pos = a.x <= b.x;
-    core->is_excl = core->is_pos;
-    if (flip_excl) {
-        core->is_excl = !core->is_excl;
-    }
     uint8_t dx;
     if (core->is_pos) {
         dx = b.x - a.x;
@@ -42,20 +38,15 @@ void bresenham_core_init(struct bresenham_core *core, struct graphics_screen_pos
     int8_t e = dy - dx;
     core->e = dy - dx;
 
-    // TODO is this field even needed? it's proportional to e
     core->two_dy_sub_two_dx = 2 * e;
     core->two_dx = 2 * dx;
 
-    if (!core->is_excl && core->e == 0) {
+    if (!core->is_pos && core->e == 0) {
         // E is "negated" compared to the positive algo
         // unfortunately E can equal 0 in the first step
         core->e += core->two_dy_sub_two_dx;
         bresenham_core_inc(core);
     }
-}
-
-void bresenham_core_init_simple(struct bresenham_core *core, struct graphics_screen_pos a, struct graphics_screen_pos b) {
-    bresenham_core_init(core, a, b, false);
 }
 
 int8_t bresenham_core_iter(struct bresenham_core *core) {
@@ -65,7 +56,7 @@ int8_t bresenham_core_iter(struct bresenham_core *core) {
     // the point of rotating it is to keep it positive (add before subtracting)
     int8_t ret = core->x_l;
     // if subtracting 2*dx would underflow...
-    bool should_inc = core->e < core->two_dx || (!core->is_excl && core->e == core->two_dx);
+    bool should_inc = core->e < core->two_dx || (!core->is_pos && core->e == core->two_dx);
     if (should_inc) {
         bresenham_core_inc(core);
         core->e += core->two_dy_sub_two_dx;
@@ -103,9 +94,9 @@ void bresenham_init(struct bresenham *bres, struct graphics_screen_pos a, struct
         bres->prev_fake_x = a_t.x;
         bres->swapped_is_pos = a_t.x >= b_t.x;
         bres->fake_y = (bres->swapped_is_pos ? a_t.y - 1 : b_t.y + 1);
-        bresenham_core_init_simple(&bres->core, a_t, b_t);
+        bresenham_core_init(&bres->core, a_t, b_t);
     } else {
-        bresenham_core_init_simple(&bres->core, a, b);
+        bresenham_core_init(&bres->core, a, b);
     }
 }
 

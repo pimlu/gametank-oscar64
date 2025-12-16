@@ -20,11 +20,9 @@ struct bresenham_core {
     uint8_t two_dy_sub_two_dx;
     uint8_t e;
     bool is_pos;
-    bool is_excl;
 };
 
-void bresenham_core_init(struct bresenham_core *core, struct graphics_screen_pos a, struct graphics_screen_pos b, bool flip_excl);
-void bresenham_core_init_simple(struct bresenham_core *core, struct graphics_screen_pos a, struct graphics_screen_pos b);
+void bresenham_core_init(struct bresenham_core *core, struct graphics_screen_pos a, struct graphics_screen_pos b);
 int8_t bresenham_core_iter(struct bresenham_core *core);
 int8_t bresenham_core_cur_x_l(struct bresenham_core *core);
 
