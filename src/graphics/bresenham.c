@@ -4,17 +4,6 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-void graphics_swap_pos(struct graphics_screen_pos *a, struct graphics_screen_pos *b) {
-    int8_t tmp;
-
-    tmp = a->x;
-    a->x = b->x;
-    b->x = tmp;
-
-    tmp = a->y;
-    a->y = b->y;
-    b->y = tmp;
-}
 
 static void bresenham_core_inc(struct bresenham_core *core) {
     if (core->is_pos) {

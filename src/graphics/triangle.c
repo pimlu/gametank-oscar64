@@ -1,6 +1,7 @@
 #include "triangle.h"
 
 #include "bresenham.h"
+// #include "bresenham_ref.h"
 #include "screen.h"
 #include "system/bcr.h"
 #include "system/i8helpers.h"
@@ -31,12 +32,24 @@ static void fill_triangle_callback(int8_t y, int8_t x_left, int8_t x_right) {
     bcr_trigger_row_fill(x_left, y, width);
 }
 
+
+// main implementation
+//
 #define TRIANGLE_FUNC_NAME graphics_fill_triangle_impl
 #define TRIANGLE_FILL_CALL fill_triangle_callback
 #define TRIANGLE_BRES_STRUCT struct bresenham
 #define TRIANGLE_BRES_INIT_CALL bresenham_init
 #define TRIANGLE_BRES_ITER_CALL bresenham_iter
 #include "triangle_impl.c"
+
+// reference implementation
+//
+// #define TRIANGLE_FUNC_NAME graphics_fill_triangle_impl
+// #define TRIANGLE_FILL_CALL fill_triangle_callback
+// #define TRIANGLE_BRES_STRUCT bresenham_reference_t
+// #define TRIANGLE_BRES_INIT_CALL bresenham_reference_init
+// #define TRIANGLE_BRES_ITER_CALL bresenham_reference_iter
+// #include "triangle_impl.c"
 
 void graphics_fill_triangle(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c, uint8_t color) {
     bcr_setup_row_fill(color);

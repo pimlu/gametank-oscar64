@@ -15,6 +15,15 @@
 #include "types.h"
 #include "system/imul.h"
 
+
+#ifdef __OSCAR64C__
+static __zeropage graphics_screen_pos left, right;
+static __zeropage TRIANGLE_BRES_STRUCT left_bres, right_bres;
+#else
+// will be defined locally in the function
+#endif
+
+
 void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos b, struct graphics_screen_pos c) {
     // sort them so a.y <= b.y <= c.y
     if (a.y > b.y) graphics_swap_pos(&a, &b);
@@ -33,8 +42,12 @@ void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos
         b_is_left = b.x < a.x;
     }
 
-    struct graphics_screen_pos left = c;
-    struct graphics_screen_pos right = b;
+#ifndef __OSCAR64C__
+    struct graphics_screen_pos left, right;
+#endif
+
+    left = c;
+    right = b;
     if (b_is_left) {
         left = b;
         right = c;
@@ -43,8 +56,10 @@ void TRIANGLE_FUNC_NAME(struct graphics_screen_pos a, struct graphics_screen_pos
     // if a.y == b.y, need to skip [a, b]
 
     // first, fill the "flat top triangle"
+#ifndef __OSCAR64C__
     TRIANGLE_BRES_STRUCT left_bres;
     TRIANGLE_BRES_STRUCT right_bres;
+#endif
     TRIANGLE_BRES_INIT_CALL(&left_bres, a, left);
     TRIANGLE_BRES_INIT_CALL(&right_bres, a, right);
 

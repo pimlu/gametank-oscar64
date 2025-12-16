@@ -11,8 +11,6 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-void graphics_swap_pos(struct graphics_screen_pos *a, struct graphics_screen_pos *b);
-
 // https://mcejp.github.io/2020/11/06/bresenham.html
 struct bresenham_core {
     int8_t x_l;
