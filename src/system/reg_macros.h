@@ -46,3 +46,13 @@
         volatile uint8_t *ptr = (volatile uint8_t*) (addr); \
         return *ptr; \
     }
+
+// Macro to declare a write-only register
+#define DECLARE_WRITEREG(name) \
+    void name##_write(uint8_t val);
+
+// Macro to define a write-only register
+#define DEFINE_WRITEREG(name, addr) \
+    void name##_write(uint8_t val) { \
+        *(volatile uint8_t*) (addr) = val; \
+    }

@@ -6,14 +6,14 @@
 #pragma data(data63)
 #pragma bss(bss)
 
-DEFINE_MEMREG(bcr_reg_vx, 0x4000);
-DEFINE_MEMREG(bcr_reg_vy, 0x4001);
-DEFINE_MEMREG(bcr_reg_gx, 0x4002);
-DEFINE_MEMREG(bcr_reg_gy, 0x4003);
-DEFINE_MEMREG(bcr_reg_width, 0x4004);
-DEFINE_MEMREG(bcr_reg_height, 0x4005);
-DEFINE_MEMREG(bcr_reg_start, 0x4006);
-DEFINE_MEMREG(bcr_reg_color, 0x4007);
+DEFINE_WRITEREG(bcr_reg_vx, 0x4000);
+DEFINE_WRITEREG(bcr_reg_vy, 0x4001);
+DEFINE_WRITEREG(bcr_reg_gx, 0x4002);
+DEFINE_WRITEREG(bcr_reg_gy, 0x4003);
+DEFINE_WRITEREG(bcr_reg_width, 0x4004);
+DEFINE_WRITEREG(bcr_reg_height, 0x4005);
+DEFINE_WRITEREG(bcr_reg_start, 0x4006);
+DEFINE_WRITEREG(bcr_reg_color, 0x4007);
 
 void bcr_draw_box(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t c) {
     scr_set_colorfill_mode(true);
