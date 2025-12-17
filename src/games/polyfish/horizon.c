@@ -24,14 +24,14 @@ void draw_horizon(geof_t pos_) {
         bcr_draw_box(
             GRAPHICS_FRAME_X_LO, ocean_lo,
             GRAPHICS_FRAME_W, ocean_hi - ocean_lo,
-            (uint8_t) ~0b11011011);
+            (uint8_t) ~0b10111010);
         wait_for_interrupt();
     }
     if (sand_lo < sand_hi) {
         bcr_draw_box(
             GRAPHICS_FRAME_X_LO, sand_lo,
             GRAPHICS_FRAME_W, sand_hi - sand_lo,
-            (uint8_t) ~0b01001100);
+            (uint8_t) ~0b00101100);
         wait_for_interrupt();
     }
 }

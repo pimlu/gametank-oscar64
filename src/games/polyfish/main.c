@@ -74,12 +74,12 @@ void init(void) {
     camera.position.z = (geof_t){GEOF_CAMERA_POS_Z};
 
     uint8_t cube_colors[6] = {
-        (uint8_t) ~0b00001101,
-        (uint8_t) ~0b00001101,
-        (uint8_t) ~0b00001010,
-        (uint8_t) ~0b00001110,
-        (uint8_t) ~0b00001101,
-        (uint8_t) ~0b00001100
+        (uint8_t) ~0b11101110,
+        (uint8_t) ~0b11101110,
+        (uint8_t) ~0b11101011,
+        (uint8_t) ~0b11101111,
+        (uint8_t) ~0b11101110,
+        (uint8_t) ~0b11101101
     };
 
     cube.lo.x = (geof_t){GEOF_ZERO};
@@ -93,9 +93,9 @@ void init(void) {
     }
 
     uint8_t fish_colors[3] = {
-        (uint8_t) ~0b01111100,
-        (uint8_t) ~0b01111101,
-        (uint8_t) ~0b01110010,
+        (uint8_t) ~0b01011010,
+        (uint8_t) ~0b01011100,
+        (uint8_t) ~0b01000000,
     };
     
     fish1.base_pos.x = (geof_t){GEOF_ZERO};
