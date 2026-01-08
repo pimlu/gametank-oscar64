@@ -35,9 +35,13 @@ void scr_set_enable_vblank_nmi(bool enabled) {
 
 uint16_t scr_read_gamepad1(void) {
     // according to https://gametank.zone/manual/, reset the state via reading 2 first
-    scr_reg_gamepad2_read();
+    uint8_t unused = scr_reg_gamepad2_read();
+    // oscar64 will unfortunately remove the volatile read unless we store it to a value like so
+    (void) unused;
     
     uint8_t lo = scr_reg_gamepad1_read();
+    // oscar64 will unfortunately remove the second volatile read unless we do this
+    __asm volatile {};
     uint8_t hi = scr_reg_gamepad1_read();
     uint16_t combo = (hi << 8) | lo;
 
