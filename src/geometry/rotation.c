@@ -37,19 +37,19 @@ struct coord rotation_apply(const struct rotation *rot, struct coord c) {
 }
 
 struct coord rotation_apply_neg(const struct rotation *rot, struct coord c) {
-    // first, rotate to heading
-    iunitf_t heading_cos = geometry_cos(rot->heading.theta);
-    iunitf_t heading_sin = geometry_sin(rot->heading.theta);
-    
-    geof_t x = geof_add(iunitf_mul_geof(heading_cos, c.x), iunitf_mul_geof(heading_sin, c.z));
-    geof_t z = geof_add(geof_neg(iunitf_mul_geof(heading_sin, c.x)), iunitf_mul_geof(heading_cos, c.z));
-
-    // then, tilt according to pitch
+    // first, inverse tilt according to pitch
     iunitf_t pitch_cos = geometry_cos(rot->pitch.theta);
     iunitf_t pitch_sin = geometry_sin(rot->pitch.theta);
-    
-    geof_t y = geof_add(geof_neg(iunitf_mul_geof(pitch_sin, z)), iunitf_mul_geof(pitch_cos, c.y));
-    z = geof_add(iunitf_mul_geof(pitch_cos, z), iunitf_mul_geof(pitch_sin, c.y));
+
+    geof_t y = geof_sub(iunitf_mul_geof(pitch_cos, c.y), iunitf_mul_geof(pitch_sin, c.z));
+    geof_t z = geof_add(iunitf_mul_geof(pitch_sin, c.y), iunitf_mul_geof(pitch_cos, c.z));
+
+    // then, inverse rotate to heading
+    iunitf_t heading_cos = geometry_cos(rot->heading.theta);
+    iunitf_t heading_sin = geometry_sin(rot->heading.theta);
+
+    geof_t x = geof_add(iunitf_mul_geof(heading_cos, c.x), iunitf_mul_geof(heading_sin, z));
+    z = geof_add(geof_neg(iunitf_mul_geof(heading_sin, c.x)), iunitf_mul_geof(heading_cos, z));
 
     struct coord result = {x, y, z};
     return result;
