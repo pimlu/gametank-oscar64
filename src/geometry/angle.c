@@ -28,6 +28,9 @@ void angle_set_theta(struct angle *ang, geof_t val) {
 }
 
 void angle_adjust(struct angle *ang, geof_t val) {
+    if (val.data == GEOF_ZERO) {
+        return;
+    }
     geof_t next = geof_add(angle_get_theta(ang), val);
     geof_t threshold_high = {GEOF_SIN_RANGE};
     geof_t threshold_low = geof_neg((geof_t){GEOF_SIN_RANGE});

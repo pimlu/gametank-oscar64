@@ -78,7 +78,7 @@ void init(void) {
         (uint8_t) ~0b11101110,
         (uint8_t) ~0b11101011,
         (uint8_t) ~0b11101111,
-        (uint8_t) ~0b11101110,
+        (uint8_t) ~0b11101101,
         (uint8_t) ~0b11101101
     };
 
