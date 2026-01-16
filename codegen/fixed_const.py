@@ -18,7 +18,8 @@ CAMERA_PAN_SPEED = -1.2
 CAMERA_PITCH_SPEED = -0.6
 CAMERA_TRAVEL_SPEED = 0.3
 CAMERA_HORIZON_Z = 2.0
-CAMERA_STRAFE_MULT = -1.5
+CAMERA_STRAFE_HEADING_MULT = -1.5
+CAMERA_STRAFE_MULT = 1.5
 
 CUBE_SCALE = 1.0 / 8.0
 
@@ -80,6 +81,7 @@ def gen_fixed_constants():
 #define GEOF_CAMERA_PITCH_SPEED {geof_raw(CAMERA_PITCH_SPEED)}
 #define GEOF_CAMERA_TRAVEL_SPEED {geof_raw(CAMERA_TRAVEL_SPEED)}
 #define GEOF_CAMERA_HORIZON_Z {geof_raw(CAMERA_HORIZON_Z)}
+#define GEOF_CAMERA_STRAFE_HEADING_MULT {geof_raw(CAMERA_STRAFE_HEADING_MULT)}
 #define GEOF_CAMERA_STRAFE_MULT {geof_raw(CAMERA_STRAFE_MULT)}
 
 // Cube constants
@@ -104,16 +106,16 @@ def gen_polyfish_constants():
     # Camera initial values
     CAMERA_HEADING_THETA = 5.0
     CAMERA_PITCH_THETA = -12.0
-    CAMERA_POS_X = 3.0
+    CAMERA_POS_X = 2.0
     CAMERA_POS_Y = 4.0
-    CAMERA_POS_Z = 5.0
+    CAMERA_POS_Z = 6.0
     
     # Cube values
     CUBE_HI = 2.0
     
     # Fish values
     FISH_BASE_Y = 1.0
-    FISH_ADJUST = 1.5
+    FISH_ADJUST = 1.0
     FISH_MAIN_OFFSET = 3.0
     FISH_VERTEX_X_NEG_HALF = -0.5
     FISH_VERTEX_Y_075 = 0.75

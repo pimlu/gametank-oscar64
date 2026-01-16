@@ -98,9 +98,9 @@ void init(void) {
         (uint8_t) ~0b01000000,
     };
     
-    fish1.base_pos.x = (geof_t){GEOF_ZERO};
+    fish1.base_pos.x = (geof_t){GEOF_CUBE_HI/2};
     fish1.base_pos.y = (geof_t){GEOF_FISH_BASE_Y};
-    fish1.base_pos.z = (geof_t){GEOF_ZERO};
+    fish1.base_pos.z = (geof_t){GEOF_CUBE_HI/2};
     geof_t zero_angle = (geof_t){GEOF_ZERO};
     angle_set_theta(&fish1.angle, zero_angle);
     for (uint8_t i = 0; i < 3; i++) {

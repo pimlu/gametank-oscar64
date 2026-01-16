@@ -11,6 +11,7 @@
 const geof_t geometry_pan_speed = {GEOF_CAMERA_PAN_SPEED};
 const geof_t geometry_pitch_speed = {GEOF_CAMERA_PITCH_SPEED};
 const geof_t geometry_travel_speed = {GEOF_CAMERA_TRAVEL_SPEED};
+const geof_t geometry_orbit_travel_speed = {GEOF_CAMERA_TRAVEL_SPEED};
 
 void camera_tick_frame(camera_t *cam) {
     cam->proj_frame++;
@@ -83,7 +84,7 @@ void camera_update_from_gamepad(camera_t *cam, uint16_t pad) {
             d_heading = geof_sub(d_heading, geometry_pan_speed);
         }
         if (pad & INPUT_MASK_RIGHT) {
-            d_heading = geof_add(d_heading, geometry_pitch_speed);
+            d_heading = geof_add(d_heading, geometry_pan_speed);
         }
         if (pad & INPUT_MASK_UP) {
             d_pitch = geof_sub(d_pitch, geometry_pitch_speed);
@@ -115,8 +116,11 @@ void camera_update_from_gamepad(camera_t *cam, uint16_t pad) {
     }
 
     if (rot_strafe) {
-        geof_t strafe_mult = { GEOF_CAMERA_STRAFE_MULT };
-        d_heading = geof_mul(d_heading, strafe_mult);
+        geof_t heading_mult = { GEOF_CAMERA_STRAFE_HEADING_MULT };
+        geof_t dir_mult = { GEOF_CAMERA_STRAFE_MULT };
+        d_heading = geof_mul(d_heading, heading_mult);
+        dir.x = geof_mul(dir.x, dir_mult);
+        dir.y = geof_mul(dir.y, dir_mult);
     }
     angle_adjust(&cam->rotation.heading, d_heading);
     angle_adjust(&cam->rotation.pitch, d_pitch);
