@@ -38,6 +38,7 @@ uint16_t scr_read_gamepad1(void) {
     uint8_t unused = scr_reg_gamepad2_read();
     // oscar64 will unfortunately remove the volatile read unless we store it to a value like so
     (void) unused;
+    __asm volatile {};
     
     uint8_t lo = scr_reg_gamepad1_read();
     // oscar64 will unfortunately remove the second volatile read unless we do this
