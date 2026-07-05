@@ -33,6 +33,31 @@ fi
 # Cleanup bresenham test
 rm -f /tmp/bresenham_test
 
+# Compile the chain (convex fill) test
+clang -D__TEST__ \
+    -I. -Isrc \
+    tests/chain_test.c \
+    src/graphics/bresenham.c \
+    src/graphics/convex.c \
+    src/graphics/types.c \
+    src/system/i8helpers.c \
+    src/system/imul.c \
+    -o /tmp/chain_test \
+    -Wall -Wextra -Werror -Wno-unknown-pragmas
+
+# Run the test
+/tmp/chain_test
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "Chain tests failed with exit code $EXIT_CODE"
+    rm -f /tmp/chain_test
+    exit $EXIT_CODE
+fi
+
+# Cleanup chain test
+rm -f /tmp/chain_test
+
 # Compile the mul test
 clang -D__TEST__ \
     -I. -Isrc \
