@@ -10,3 +10,8 @@ struct triangle {
     struct coord a, b, c;
 };
 
+// A convex quadrilateral, corners in boundary order (either winding).
+struct quad {
+    struct coord a, b, c, d;
+};
+

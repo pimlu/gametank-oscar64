@@ -12,5 +12,6 @@
 
 struct graphics_screen_pos geometry_to_screen(struct coord c);
 void geometry_fill_triangle(const camera_t *cam, struct triangle *t, uint8_t color);
+void geometry_fill_convex_quad(const camera_t *cam, struct quad *q, uint8_t color);
 
 #pragma compile("polygons.c")

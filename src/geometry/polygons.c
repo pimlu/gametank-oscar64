@@ -8,6 +8,7 @@
 
 #include "graphics/types.h"
 #include "graphics/triangle.h"
+#include "graphics/chains.h"
 
 #pragma code(code63)
 #pragma data(data63)
@@ -38,5 +39,20 @@ void geometry_fill_triangle(const camera_t *cam, struct triangle *t, uint8_t col
     // }
 
     graphics_fill_triangle(a, b, c, color);
+}
+
+void geometry_fill_convex_quad(const camera_t *cam, struct quad *q, uint8_t color) {
+    geof_t zero = {GEOF_ZERO};
+    if (geof_le(q->a.z, zero) || geof_le(q->b.z, zero) ||
+        geof_le(q->c.z, zero) || geof_le(q->d.z, zero)) {
+        return;
+    }
+
+    struct graphics_screen_pos a = geometry_to_screen(q->a);
+    struct graphics_screen_pos b = geometry_to_screen(q->b);
+    struct graphics_screen_pos c = geometry_to_screen(q->c);
+    struct graphics_screen_pos d = geometry_to_screen(q->d);
+
+    graphics_fill_convex_quad(a, b, c, d, color);
 }
 

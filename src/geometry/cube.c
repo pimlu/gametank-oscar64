@@ -50,42 +50,32 @@ geof_t cube_calc_distance(cube_t *cube, camera_t *cam) {
 
 void cube_paint(cube_t *cube, camera_t *cam) {
     struct coord pos = cam->position;
-    struct triangle tri;
-    #define TRIANGLE(ai, bi, ci) {tri.a = cube->verts[ai]; tri.b = cube->verts[bi]; tri.c = cube->verts[ci];}
+    struct quad quad;
+    // Each face was previously two triangles (A,S1,S2) and (B,S1,S2) sharing
+    // edge S1-S2; as a single convex quad the boundary order is A, S1, B, S2.
+    #define QUAD(i0, i1, i2, i3) {quad.a = cube->verts[i0]; quad.b = cube->verts[i1]; quad.c = cube->verts[i2]; quad.d = cube->verts[i3];}
     if (geof_lt(pos.x, cube->lo.x)) {
-        TRIANGLE(0, 2, 4);
-        geometry_fill_triangle(cam, &tri, cube->colors[0]);
-        TRIANGLE(6, 2, 4);
-        geometry_fill_triangle(cam, &tri, cube->colors[0]);
+        QUAD(0, 2, 6, 4);
+        geometry_fill_convex_quad(cam, &quad, cube->colors[0]);
     } else if (geof_gt(pos.x, cube->hi.x)) {
-        TRIANGLE(1, 3, 5);
-        geometry_fill_triangle(cam, &tri, cube->colors[1]);
-        TRIANGLE(7, 3, 5);
-        geometry_fill_triangle(cam, &tri, cube->colors[1]);
+        QUAD(1, 3, 7, 5);
+        geometry_fill_convex_quad(cam, &quad, cube->colors[1]);
     }
 
     if (geof_lt(pos.y, cube->lo.y)) {
-        TRIANGLE(0, 1, 4);
-        geometry_fill_triangle(cam, &tri, cube->colors[2]);
-        TRIANGLE(5, 1, 4);
-        geometry_fill_triangle(cam, &tri, cube->colors[2]);
+        QUAD(0, 1, 5, 4);
+        geometry_fill_convex_quad(cam, &quad, cube->colors[2]);
     } else if (geof_gt(pos.y, cube->hi.y)) {
-        TRIANGLE(2, 3, 6);
-        geometry_fill_triangle(cam, &tri, cube->colors[3]);
-        TRIANGLE(7, 3, 6);
-        geometry_fill_triangle(cam, &tri, cube->colors[3]);
+        QUAD(2, 3, 7, 6);
+        geometry_fill_convex_quad(cam, &quad, cube->colors[3]);
     }
 
     if (geof_lt(pos.z, cube->lo.z)) {
-        TRIANGLE(0, 1, 2);
-        geometry_fill_triangle(cam, &tri, cube->colors[4]);
-        TRIANGLE(3, 1, 2);
-        geometry_fill_triangle(cam, &tri, cube->colors[4]);
+        QUAD(0, 1, 3, 2);
+        geometry_fill_convex_quad(cam, &quad, cube->colors[4]);
     } else if (geof_gt(pos.z, cube->hi.z)) {
-        TRIANGLE(4, 5, 6);
-        geometry_fill_triangle(cam, &tri, cube->colors[5]);
-        TRIANGLE(7, 5, 6);
-        geometry_fill_triangle(cam, &tri, cube->colors[5]);
+        QUAD(4, 5, 7, 6);
+        geometry_fill_convex_quad(cam, &quad, cube->colors[5]);
     }
 }
 
