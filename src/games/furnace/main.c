@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "system/acp.h"
+#include "audio/music.h"
 #include "system/bcr.h"
 #include "system/interrupts.h"
 #include "system/scr.h"
@@ -11,30 +11,19 @@
 #pragma data(data63)
 #pragma bss(bss)
 
+// Plays the song that ./build_with_song.sh put into the ROM, and does nothing else.
+
 // the bank boot.c selected for $8000-$BFFF
 #define GAME_ROM_BANK 126
-
-// phase increments for C4..C5 at 13983 Hz: f * 65536 / 13982.6
-static const uint16_t scale[8] = { 1226, 1376, 1545, 1637, 1837, 2062, 2315, 2452 };
-
-#define FRAMES_PER_NOTE 30
 
 void game_start(void) {
     // boot.c's last blit left the blitter IRQ asserted, and WAI returns immediately while it is
     bcr_reset_irq();
 
-    acp_init(ACP_RATE_13983, GAME_ROM_BANK);
-
-    uint8_t note = 0;
-    uint8_t frames = 0;
+    music_init(GAME_ROM_BANK);
 
     for (;;) {
-        if (frames == 0) {
-            acp_set_pitch(scale[note]);
-            note = (note + 1) & 7;
-            frames = FRAMES_PER_NOTE;
-        }
-        frames--;
+        music_pump(GAME_ROM_BANK);
 
         scr_set_enable_vblank_nmi(true);
         wait_for_interrupt();

@@ -7,6 +7,8 @@
 #include "system/interrupts.h"
 #include "system/scr.h"
 
+#include "audio/music.h"
+
 #include "graphics/screen.h"
 #include "graphics/triangle.h"
 
@@ -33,12 +35,21 @@ static camera_t camera;
 static cube_t cube;
 static fish_t fish1;
 
+// the bank boot.c selected for $8000-$BFFF, i.e. the one this code is in
+#define GAME_ROM_BANK 126
+
 void game_start(void) {
     init();
+    // plays the song that ./build_with_song.sh put into the ROM, if any
+    music_init(GAME_ROM_BANK);
 
     for (;;) {
         scr_set_enable_vblank_nmi(false);
 
+        // The ACP keeps the time, all it needs from us is more of the stream now and then.
+        // (This switches ROM banks and back; fine from here as long as the pump itself and
+        // the interrupt handlers live in the fixed bank.)
+        music_pump(GAME_ROM_BANK);
         tick();
         scr_flip_framebuffer();
         
