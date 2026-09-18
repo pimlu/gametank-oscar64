@@ -60,22 +60,16 @@ def parse_asm_file(filename):
 def create_gametank_rom(banks, output_filename):
     """Create a GameTank ROM file from parsed bank data."""
     
-    # GameTank has 128 banks, but we only use oscar64 banks 62 and 63
-    # mapped to GameTank banks 126 and 127
-    
     BANK_SIZE = 0x4000  # 16KB per bank
     NUM_BANKS = 128
     
     # Initialize ROM with 0xFF (unprogrammed flash)
     rom = bytearray([0xFF] * (NUM_BANKS * BANK_SIZE))
     
-    # Map oscar64 banks to GameTank banks
-    # oscar64 bank 62 -> GameTank bank 126 (bankable region, $8000-$BFFF)
+    # Map oscar64 banks to GameTank banks: oscar64 only has 64, so they are the top half.
     # oscar64 bank 63 -> GameTank bank 127 (fixed region, $C000-$FFFF)
-    oscar_to_gametank = {
-        62: 126,
-        63: 127,
-    }
+    # oscar64 bank 62 -> GameTank bank 126 (bankable region, $8000-$BFFF), 61 -> 125 etc.
+    oscar_to_gametank = {b: b + 64 for b in range(64)}
     
     for oscar_bank, data in banks.items():
         if oscar_bank not in oscar_to_gametank:
